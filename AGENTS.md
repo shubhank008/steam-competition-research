@@ -4,7 +4,7 @@
 
 Steam Competition Research is a planned Python CLI that collects Steam store metadata and reviews, classifies review evidence with a configurable LLM, aggregates metrics deterministically, and creates a concise cross-competitor strategy brief.
 
-The repository is currently documentation-only. Implementation begins at T001 in [PLAN.md](PLAN.md). Read these files before changing architecture or scope:
+The repository now has the initial T001 package foundation; research features remain planned. Read these files before changing architecture or scope:
 
 1. [PRD.md](PRD.md) — product outcomes and acceptance criteria
 2. [SPEC.md](SPEC.md) — architecture and technical contracts
@@ -56,31 +56,40 @@ Do not rewrite, squash, or force-push shared history unless the user explicitly 
 
 ## Current commands
 
-No Python package or executable test suite exists yet. Do not invent commands or install dependencies until T001 defines and locks the toolchain.
-
-For documentation-only changes, run:
+Use Python 3.12 or newer and `uv` 0.12 or newer. Install the exact locked environment with:
 
 ```bash
-git diff --check
-git status --short
-git --no-pager diff --stat
-git --no-pager diff
+uv sync --locked
 ```
 
-T001 must replace this section with verified copy-pasteable setup, test, lint, format, typecheck, and single-test commands. Keep it synchronized with `pyproject.toml`, the lock file, and CI.
+Run these verified commands from the repository root:
+
+```bash
+uv run steam-research --help
+uv run pytest
+uv run pytest tests/test_cli.py
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy
+```
+
+The default tests are offline. Keep `uv.lock` committed and run `uv lock` only when dependency declarations change.
 
 ## Current repository structure
 
 ```text
-AGENTS.md   Agent workflow and guardrails
-README.md   Project entry point and current status
-PRD.md      Product requirements and acceptance criteria
-SPEC.md     Technical architecture and contracts
-PLAN.md     Agent-ready implementation sequence
-.gitignore  Python and local-environment exclusions
+AGENTS.md                 Agent workflow and guardrails
+README.md                 Project entry point and current status
+PRD.md                    Product requirements and acceptance criteria
+SPEC.md                   Technical architecture and contracts
+PLAN.md                   Agent-ready implementation sequence
+pyproject.toml            Package metadata and tool configuration
+uv.lock                   Locked runtime and development dependencies
+src/steam_research/       Importable package and minimal CLI
+tests/test_cli.py         Installed CLI smoke test
 ```
 
-The intended implementation layout is defined in `SPEC.md`, Section 4. Do not create speculative modules before their owning PLAN task.
+The intended future implementation layout is defined in `SPEC.md`, Section 4. Do not create speculative modules before their owning PLAN task.
 
 ## How to execute a PLAN task
 

@@ -2,7 +2,7 @@
 
 Steam Competition Research is a planned CLI pipeline for turning Steam store metadata and large review corpora into a concise, evidence-backed competitive strategy brief. It is designed for product owners and developers who need to understand competitors, find market gaps, prioritize features, avoid technical failures, and improve Steam positioning.
 
-The repository is currently at the **documentation and architecture foundation** stage. Implementation has not started. See [PLAN.md](PLAN.md) for the first development task.
+The repository is at the **Python package foundation** stage. T001 provides an importable package, a minimal CLI, locked dependencies, and the local feedback loop. See [PLAN.md](PLAN.md) for the implementation sequence.
 
 ## What the system will do
 
@@ -76,7 +76,21 @@ Planned major components:
 - deterministic aggregation and evidence selection
 - Parquet and Markdown exporters
 
-The exact dependency baseline will be established by PLAN task T001 and then documented here with verified commands.
+## Implemented foundation
+
+T001 currently provides only the package foundation and feedback loop; Steam collection and research commands remain future PLAN tasks.
+
+- Python 3.12 or newer
+- `uv` for the environment and locked dependencies
+- Typer for the minimal CLI
+- pytest, Ruff, and mypy for local feedback
+
+The installed entry point currently supports `--help` and `--version`:
+
+```text
+steam-research --help
+steam-research --version
+```
 
 ## Planned data lifecycle
 
@@ -150,7 +164,7 @@ Expected provider variables will include an API key and base URL for the selecte
 | Product requirements | Complete initial version |
 | Technical specification | Complete initial version |
 | Agentic implementation plan | Complete initial version |
-| Python package and CLI | Not started |
+| Python package and CLI | T001 in progress ([~]) |
 | SQLite storage | Not started |
 | Steam collection | Not started |
 | Stage 1 classification | Not started |
@@ -184,14 +198,24 @@ Do not push directly to `main`. Do not commit `.env`, runtime databases, raw rev
 
 ## Setup and validation
 
-There is no executable package yet, so there are no verified installation, test, lint, or typecheck commands. T001 must establish those commands and update this section plus [AGENTS.md](AGENTS.md) in the same branch.
-
-Until then, documentation changes can be checked with:
+Install the locked runtime and development dependencies with `uv`:
 
 ```bash
-git diff --check
-git status --short
+uv sync --locked
 ```
+
+Run the package and feedback loop commands from the repository root:
+
+```bash
+uv run steam-research --help
+uv run pytest
+uv run pytest tests/test_cli.py
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy
+```
+
+The smoke test invokes the installed `steam-research` console script through a real subprocess. The default test suite is offline and does not require Steam or model-provider credentials.
 
 ## Data and research caveats
 

@@ -46,7 +46,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 
 ## 3. Phase 0 — Engineering foundation
 
-### [ ] T001: Bootstrap the Python package and feedback loop
+### [~] T001: Bootstrap the Python package and feedback loop
 
 - **Suggested branch:** `chore/python-bootstrap`
 - **Depends on:** none
