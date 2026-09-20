@@ -374,6 +374,28 @@ def _migration_7(connection: sqlite3.Connection) -> None:
     )
 
 
+def _migration_9(connection: sqlite3.Connection) -> None:
+    connection.executescript(
+        """
+        CREATE TABLE diagnostics (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            run_id TEXT NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+            appid INTEGER,
+            stage TEXT NOT NULL,
+            unit_id TEXT,
+            stream_batch_id TEXT,
+            attempt INTEGER,
+            duration_ms INTEGER,
+            result_count INTEGER,
+            error_classification TEXT,
+            message TEXT,
+            created_at TEXT NOT NULL
+        );
+        CREATE INDEX diagnostics_run_created_idx ON diagnostics(run_id, created_at, id);
+        """
+    )
+
+
 MIGRATIONS: tuple[Migration, ...] = (
     _migration_1,
     _migration_2,
@@ -383,6 +405,7 @@ MIGRATIONS: tuple[Migration, ...] = (
     _migration_6,
     _migration_7,
     _migration_8,
+    _migration_9,
 )
 
 

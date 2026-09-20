@@ -32,6 +32,11 @@ class OfflineFixture:
 
     @classmethod
     def load(cls, path: Path) -> OfflineFixture:
+        path = path.expanduser()
+        if path.is_symlink() or not path.is_file():
+            raise ValueError("offline fixture must be a regular local file")
+        if path.stat().st_size > 10_000_000:
+            raise ValueError("offline fixture exceeds the 10 MB local limit")
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:

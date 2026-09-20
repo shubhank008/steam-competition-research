@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,6 +29,7 @@ from steam_research.llm import (
     ProviderCapabilities,
 )
 from steam_research.llm.contracts import TransportResponse
+from steam_research.observability import Diagnostic, classify_error, redact_text
 from steam_research.projects import Competitor, list_competitors, project_paths
 from steam_research.reporting import ReportLimits, render_markdown
 from steam_research.stage2 import (
@@ -142,11 +144,43 @@ def _done(
 
 
 def _safe_error(error: BaseException) -> str:
-    text = str(error).replace("\n", " ")
-    for secret in (os.environ.get("OPENAI_API_KEY"), os.environ.get("GH_TOKEN")):
-        if secret:
-            text = text.replace(secret, "[redacted]")
-    return text[:500] or type(error).__name__
+    text = redact_text(str(error).replace("\n", " "))
+    secrets = tuple(
+        value
+        for key, value in os.environ.items()
+        if value
+        and any(word in key.lower() for word in ("key", "token", "secret", "password"))
+    )
+    return redact_text(text, secrets=secrets)[:500] or type(error).__name__
+
+
+def _record_app_diagnostic(
+    database: Database,
+    run: Run,
+    *,
+    stage: str,
+    appid: int,
+    unit: RunUnit,
+    started: float,
+    result_count: int | None = None,
+    error: BaseException | None = None,
+) -> None:
+    from steam_research.storage.runs import record_diagnostic
+
+    record_diagnostic(
+        database,
+        Diagnostic(
+            run_id=str(run.id),
+            stage=stage,
+            app_id=appid,
+            unit_id=str(unit.id),
+            attempt=unit.attempt,
+            duration_ms=max(0, round((time.monotonic() - started) * 1000)),
+            result_count=result_count,
+            error_classification=classify_error(error) if error else None,
+            message=_safe_error(error) if error else None,
+        ),
+    )
 
 
 def crawl_store(
@@ -175,6 +209,7 @@ def crawl_store(
             if competitor.appid not in selected:
                 continue
             unit = _unit(database, run, str(competitor.appid))
+            started = time.monotonic()
             try:
                 request = StorePageRequest(
                     AppId(competitor.appid),
@@ -194,8 +229,26 @@ def crawl_store(
             except Exception as error:
                 failures += 1
                 _done(database, unit, UnitStatus.FAILED, _safe_error(error))
+                _record_app_diagnostic(
+                    database,
+                    run,
+                    stage="store",
+                    appid=competitor.appid,
+                    unit=unit,
+                    started=started,
+                    error=error,
+                )
             else:
                 _done(database, unit, UnitStatus.COMPLETED)
+                _record_app_diagnostic(
+                    database,
+                    run,
+                    stage="store",
+                    appid=competitor.appid,
+                    unit=unit,
+                    started=started,
+                    result_count=1,
+                )
         _finish(
             database,
             run,
@@ -225,6 +278,7 @@ def crawl_reviews_stage(
             if competitor.appid not in selected:
                 continue
             unit = _unit(database, run, str(competitor.appid))
+            started = time.monotonic()
             try:
                 crawl_reviews(
                     database,
@@ -252,8 +306,30 @@ def crawl_reviews_stage(
             except Exception as error:
                 failures += 1
                 _done(database, unit, UnitStatus.FAILED, _safe_error(error))
+                _record_app_diagnostic(
+                    database,
+                    run,
+                    stage="review_crawl",
+                    appid=competitor.appid,
+                    unit=unit,
+                    started=started,
+                    error=error,
+                )
             else:
+                count = database.connection.execute(
+                    "SELECT COUNT(*) FROM reviews WHERE project_id=? AND appid=?",
+                    (context.project_id, competitor.appid),
+                ).fetchone()[0]
                 _done(database, unit, UnitStatus.COMPLETED)
+                _record_app_diagnostic(
+                    database,
+                    run,
+                    stage="review_crawl",
+                    appid=competitor.appid,
+                    unit=unit,
+                    started=started,
+                    result_count=int(count),
+                )
         _finish(
             database,
             run,

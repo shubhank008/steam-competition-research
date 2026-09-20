@@ -9,6 +9,7 @@ from typing import Any
 from uuid import UUID
 
 from steam_research.domain import Run, RunStatus, RunUnit, UnitStatus
+from steam_research.observability import Diagnostic, redact_text
 from steam_research.storage import Database
 
 
@@ -18,6 +19,7 @@ class RunStatusView:
     run_type: str
     status: str
     units: list[dict[str, Any]]
+    diagnostics: list[dict[str, Any]]
     error_summary: str | None
 
 
@@ -173,8 +175,31 @@ def transition_unit(
     return updated
 
 
+def record_diagnostic(database: Database, diagnostic: Diagnostic) -> None:
+    """Persist one redacted operational diagnostic, never source payloads."""
+    with database.transaction() as connection:
+        connection.execute(
+            "INSERT INTO diagnostics (run_id, appid, stage, unit_id, stream_batch_id, "
+            "attempt, duration_ms, result_count, error_classification, message, "
+            "created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                diagnostic.run_id,
+                diagnostic.app_id,
+                redact_text(diagnostic.stage)[:80],
+                diagnostic.unit_id,
+                diagnostic.stream_batch_id,
+                diagnostic.attempt,
+                diagnostic.duration_ms,
+                diagnostic.result_count,
+                redact_text(diagnostic.error_classification or "")[:80] or None,
+                redact_text(diagnostic.message or "")[:500] or None,
+                _now(),
+            ),
+        )
+
+
 def status_view(database: Database) -> list[RunStatusView]:
-    """Return recent runs and their child-unit statuses."""
+    """Return recent runs, units, and bounded operational diagnostics."""
     runs = database.connection.execute(
         "SELECT id, run_type, status, error_summary FROM runs ORDER BY rowid DESC"
     ).fetchall()
@@ -185,13 +210,20 @@ def status_view(database: Database) -> list[RunStatusView]:
             "WHERE run_id = ? ORDER BY rowid",
             (row[0],),
         ).fetchall()
+        diagnostics = database.connection.execute(
+            "SELECT appid, stage, unit_id, stream_batch_id, attempt, duration_ms, "
+            "result_count, error_classification, message, created_at FROM diagnostics "
+            "WHERE run_id = ? ORDER BY id DESC LIMIT 100",
+            (row[0],),
+        ).fetchall()
         result.append(
             RunStatusView(
                 str(row[0]),
                 str(row[1]),
                 str(row[2]),
                 [dict(unit) for unit in units],
-                row[3],
+                [dict(item) for item in reversed(diagnostics)],
+                redact_text(row[3] or "") or None,
             )
         )
     return result
