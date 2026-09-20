@@ -2,7 +2,7 @@
 
 Steam Competition Research is a planned CLI pipeline for turning Steam store metadata and large review corpora into a concise, evidence-backed competitive strategy brief. It is designed for product owners and developers who need to understand competitors, find market gaps, prioritize features, avoid technical failures, and improve Steam positioning.
 
-The repository is at the **bounded Stage 2 synthesis and deterministic report foundation** stage. T001 provides the package feedback loop; T012/T013 provide run tracking and canonical review storage; T022/T023 add dual-stream crawling, durable page checkpoints, retries, cancellation, incremental overlap, source-hash comparison, and polarity-safe refreshes; T030/T031 add versioned eligibility decisions and universal/project taxonomy loading; T040 adds capability-gated OpenCode Go structured generation contracts; T041 adds the versioned Stage 1 schema, prompt delimiters, taxonomy validation, and evidence checks; T042/T043 add SQLite-backed token-aware batching, bounded repair/split/quarantine, lineage, deterministic scope selection, and resumable ceilings; T044 adds a synthetic multilingual gold-set fixture and deterministic offline evaluator. Aggregation, bounded synthesis, and deterministic reporting foundations are now implemented; full CLI orchestration remains a future task. See [PLAN.md](PLAN.md) for the implementation sequence.
+The repository is at the **cohesive CLI orchestration foundation** stage. T001 provides the package feedback loop; T012/T013 provide run tracking and canonical review storage; T022/T023 add dual-stream crawling, durable page checkpoints, retries, cancellation, incremental overlap, source-hash comparison, and polarity-safe refreshes; T030/T031 add versioned eligibility decisions and universal/project taxonomy loading; T040 adds capability-gated OpenCode Go structured generation contracts; T041 adds the versioned Stage 1 schema, prompt delimiters, taxonomy validation, and evidence checks; T042/T043 add SQLite-backed token-aware batching, bounded repair/split/quarantine, lineage, deterministic scope selection, and resumable ceilings; T044 adds a synthetic multilingual gold-set fixture and deterministic offline evaluator. Aggregation, bounded synthesis, deterministic reporting, and the cohesive CLI command surface are implemented; full offline fixture orchestration and live operational hardening remain in progress under T063. See [PLAN.md](PLAN.md) for the implementation sequence.
 
 ## What the system will do
 
@@ -79,14 +79,14 @@ Planned major components:
 
 ## Implemented foundation
 
-T001 provides the package foundation; T012/T013 provide resumable run/unit persistence and canonical review storage; T021 provides the one-page Steam adapter; T022/T023 provide the resumable dual-stream crawler and safe incremental refresh. CLI orchestration remains a future PLAN task.
+T001 provides the package foundation; T012/T013 provide resumable run/unit persistence and canonical review storage; T021 provides the one-page Steam adapter; T022/T023 provide the resumable dual-stream crawler and safe incremental refresh; T063 provides the stage command surface and runner wiring. Offline end-to-end fixture injection and further interruption/live-boundary hardening remain tracked by T063/T070/T073.
 
 - Python 3.12 or newer
 - `uv` for the environment and locked dependencies
 - Typer for the minimal CLI
 - pytest, Ruff, and mypy for local feedback
 
-The installed entry point supports project initialization and competitor management:
+The installed entry point supports project initialization, competitor management, and the T063 pipeline command surface:
 
 ```text
 steam-research init PATH --name project-name
@@ -95,7 +95,17 @@ steam-research app list --project PATH
 steam-research --help
 steam-research --version
 steam-research status --project PATH [--json]
+steam-research crawl store --project PATH [--app APPID | --all]
+steam-research crawl reviews --project PATH [--app APPID | --all]
+steam-research classify --project PATH --scope unclassified-only
+steam-research aggregate --project PATH
+steam-research synthesize --project PATH
+steam-research run --project PATH
+steam-research export parquet --project PATH --output exports
+steam-research export report --project PATH --output strategy-brief.md
 ```
+
+`run` executes collection, resumable review crawling, eligibility/classification, deterministic aggregation, and Stage 2 synthesis in order. Stage commands persist run and unit state; partial app or provider failures are visible in `status` and return a non-zero exit code when the requested stage cannot complete. `--json` serializes the same persisted run/unit view used by the human status command. Store/review collection and configured model providers are live boundaries; default tests use offline fixture sources/providers and never require credentials.
 
 Each project stores its canonical SQLite database at `PATH/project.sqlite3` and its starter configuration at `PATH/project.toml`. SQLite uses WAL mode and enforces foreign keys. Repeating a competitor addition is idempotent and reports `Already present`; invalid app input fails before inserting a row.
 
@@ -200,10 +210,11 @@ Taxonomies are safe-loaded from YAML. Use `config/taxonomies/universal-core.yaml
 | Source review storage and query API | T013 in progress ([~]) |
 | Steam collection contracts and fixtures | In progress (T020) |
 | Stage 1 classification | Not started |
-| Aggregation | Not started |
+| Aggregation | Implemented (T050/T051 [~]) |
 | Stage 2 strategy brief | In progress (T061/T062 [~]) |
+| Cohesive CLI pipeline | In progress (T063 [~]) |
 
-The project is ready to begin **T001: Bootstrap the Python package and feedback loop** from [PLAN.md](PLAN.md).
+The project is ready to continue **T063: Orchestrate full CLI pipeline** from [PLAN.md](PLAN.md).
 
 ## Contribution workflow
 

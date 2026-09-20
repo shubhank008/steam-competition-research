@@ -78,6 +78,8 @@ uv run steam-research app add APPID_OR_STORE_URL --project PATH
 uv run steam-research app list --project PATH
 uv run pytest
 uv run pytest tests/test_cli.py tests/test_project_cli.py tests/integration/test_storage.py
+uv run steam-research --help
+uv run steam-research crawl --help
 uv run ruff format --check .
 uv run ruff check .
 uv run mypy

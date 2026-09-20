@@ -406,7 +406,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Snapshot tests cover missing evidence, one competitor, and several competitors.
 - **Suggested commits:** renderer; limit/word validation; snapshots and README examples.
 
-### [ ] T063: Orchestrate full CLI pipeline
+### [~] T063: Orchestrate full CLI pipeline
 
 - **Suggested branch:** `feat/pipeline-cli`
 - **Depends on:** T023, T024, T043, T050, T061, T062
@@ -418,6 +418,9 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Partial app/batch failure is visible and resumable.
   - Human and JSON status agree.
 - **Suggested commits:** stage commands; full runner; end-to-end tests/docs.
+
+- **Progress note (2026-07-08):** Added `steam_research.pipeline` and Typer commands for store/review crawl, scoped classification, aggregate, synthesis, `run`, Parquet/report export, and persisted human/JSON status. Existing services remain the source of truth for crawl/classification/aggregate/synthesis lineage; default tests remain offline. T063 stays `[~]` because fixture-provider injection through the public CLI, interruption-specific transitions, and complete multi-competitor end-to-end CLI coverage still require follow-up.
+
 
 ## 10. Phase 7 — Hardening and MVP release
 
