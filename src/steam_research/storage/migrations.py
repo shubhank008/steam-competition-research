@@ -211,7 +211,9 @@ def _migration_6(connection: sqlite3.Connection) -> None:
         CREATE TABLE classification_runs (
             id TEXT PRIMARY KEY NOT NULL,
             project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-            scope TEXT NOT NULL CHECK (scope IN ('all', 'progressive', 'stratified', 'unclassified-only')),
+            scope TEXT NOT NULL CHECK (scope IN (
+                'all', 'progressive', 'stratified', 'unclassified-only'
+            )),
             seed INTEGER NOT NULL,
             source_population INTEGER NOT NULL CHECK (source_population >= 0),
             selected_count INTEGER NOT NULL CHECK (selected_count >= 0),
@@ -222,7 +224,9 @@ def _migration_6(connection: sqlite3.Connection) -> None:
             model_policy TEXT NOT NULL,
             schema_version TEXT NOT NULL,
             policy_hash TEXT NOT NULL,
-            status TEXT NOT NULL CHECK (status IN ('pending', 'running', 'completed', 'partial', 'failed', 'cancelled')),
+            status TEXT NOT NULL CHECK (status IN (
+                'pending', 'running', 'completed', 'partial', 'failed', 'cancelled'
+            )),
             request_ceiling INTEGER NOT NULL CHECK (request_ceiling >= 0),
             token_ceiling INTEGER NOT NULL CHECK (token_ceiling >= 0),
             cost_ceiling_usd REAL NOT NULL CHECK (cost_ceiling_usd >= 0),
@@ -237,7 +241,9 @@ def _migration_6(connection: sqlite3.Connection) -> None:
             id TEXT PRIMARY KEY NOT NULL,
             run_id TEXT NOT NULL REFERENCES classification_runs(id) ON DELETE CASCADE,
             batch_number INTEGER NOT NULL,
-            status TEXT NOT NULL CHECK (status IN ('pending', 'running', 'completed', 'failed', 'quarantined')),
+            status TEXT NOT NULL CHECK (status IN (
+                'pending', 'running', 'completed', 'failed', 'quarantined'
+            )),
             input_count INTEGER NOT NULL CHECK (input_count > 0),
             estimated_tokens INTEGER NOT NULL CHECK (estimated_tokens > 0),
             attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
@@ -247,7 +253,8 @@ def _migration_6(connection: sqlite3.Connection) -> None:
         );
         CREATE TABLE review_classifications (
             run_id TEXT NOT NULL REFERENCES classification_runs(id) ON DELETE CASCADE,
-            batch_id TEXT NOT NULL REFERENCES classification_batches(id) ON DELETE CASCADE,
+            batch_id TEXT NOT NULL REFERENCES classification_batches(id)
+                ON DELETE CASCADE,
             project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
             appid INTEGER NOT NULL,
             recommendationid TEXT NOT NULL,
@@ -259,7 +266,9 @@ def _migration_6(connection: sqlite3.Connection) -> None:
             taxonomy_hash TEXT NOT NULL,
             model_policy TEXT NOT NULL,
             schema_version TEXT NOT NULL,
-            status TEXT NOT NULL CHECK (status IN ('pending', 'success', 'error', 'quarantined')),
+            status TEXT NOT NULL CHECK (status IN (
+                'pending', 'success', 'error', 'quarantined'
+            )),
             result_json TEXT CHECK (result_json IS NULL OR json_valid(result_json)),
             error_code TEXT,
             error_detail TEXT,
@@ -272,8 +281,10 @@ def _migration_6(connection: sqlite3.Connection) -> None:
             updated_at TEXT NOT NULL,
             PRIMARY KEY (run_id, project_id, appid, recommendationid)
         );
-        CREATE INDEX review_classifications_current_idx ON review_classifications(project_id, appid, recommendationid, status);
-        CREATE INDEX classification_runs_project_idx ON classification_runs(project_id, created_at);
+        CREATE INDEX review_classifications_current_idx
+            ON review_classifications(project_id, appid, recommendationid, status);
+        CREATE INDEX classification_runs_project_idx
+            ON classification_runs(project_id, created_at);
         """
     )
 
