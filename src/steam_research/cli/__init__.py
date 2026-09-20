@@ -6,6 +6,8 @@ from typing import Annotated
 import typer
 
 from steam_research import __version__
+from steam_research.llm import GenerationProvider
+from steam_research.offline_fixture import load_fixture
 from steam_research.pipeline import (
     ProjectContext,
     aggregate_stage,
@@ -133,6 +135,15 @@ def status(
         raise typer.BadParameter(str(error)) from error
 
 
+def _offline_boundaries(
+    path: Path | None,
+) -> tuple[object | None, object | None, GenerationProvider | None]:
+    if path is None:
+        return None, None, None
+    review_source, store_fetcher, provider = load_fixture(path)
+    return review_source, store_fetcher, provider
+
+
 def _context(project: Path) -> ProjectContext:
     try:
         return open_project(project)
@@ -155,11 +166,18 @@ def crawl_store_command(
     all_apps: Annotated[
         bool, typer.Option("--all", help="Process every competitor.")
     ] = False,
+    offline_fixture: Annotated[
+        Path | None,
+        typer.Option("--offline-fixture", help="Use an explicit local JSON fixture."),
+    ] = None,
 ) -> None:
     """Fetch and persist localized store metadata."""
     context = _context(project)
     try:
-        run_id = crawl_store(context, _selected_appids(appid, all_apps))
+        _, store_fetcher, _ = _offline_boundaries(offline_fixture)
+        run_id = crawl_store(
+            context, _selected_appids(appid, all_apps), fetcher=store_fetcher
+        )
     except Exception as error:
         typer.echo(f"store crawl failed: {str(error)[:500]}", err=True)
         raise typer.Exit(code=1) from error
@@ -175,11 +193,18 @@ def crawl_reviews_command(
     all_apps: Annotated[
         bool, typer.Option("--all", help="Process every competitor.")
     ] = False,
+    offline_fixture: Annotated[
+        Path | None,
+        typer.Option("--offline-fixture", help="Use an explicit local JSON fixture."),
+    ] = None,
 ) -> None:
     """Crawl resumable positive and negative review streams."""
     context = _context(project)
     try:
-        run_id = crawl_reviews_stage(context, _selected_appids(appid, all_apps))
+        review_source, _, _ = _offline_boundaries(offline_fixture)
+        run_id = crawl_reviews_stage(
+            context, _selected_appids(appid, all_apps), source=review_source
+        )
     except Exception as error:
         typer.echo(f"review crawl failed: {str(error)[:500]}", err=True)
         raise typer.Exit(code=1) from error
@@ -195,11 +220,16 @@ def classify(
         str, typer.Option("--scope", help="Classification scope.")
     ] = "unclassified-only",
     seed: Annotated[int, typer.Option("--seed", help="Stable sampling seed.")] = 0,
+    offline_fixture: Annotated[
+        Path | None,
+        typer.Option("--offline-fixture", help="Use an explicit local JSON fixture."),
+    ] = None,
 ) -> None:
     """Classify eligible reviews with the configured Stage 1 provider."""
     context = _context(project)
     try:
-        run_id = classify_stage(context, scope=scope, seed=seed)  # type: ignore[arg-type]
+        _, _, provider = _offline_boundaries(offline_fixture)
+        run_id = classify_stage(context, scope=scope, seed=seed, provider=provider)  # type: ignore[arg-type]
     except Exception as error:
         typer.echo(f"classification failed: {str(error)[:500]}", err=True)
         raise typer.Exit(code=1) from error
@@ -227,11 +257,16 @@ def synthesize_command(
     project: Annotated[
         Path, typer.Option("--project", help="Project directory.")
     ] = Path("."),
+    offline_fixture: Annotated[
+        Path | None,
+        typer.Option("--offline-fixture", help="Use an explicit local JSON fixture."),
+    ] = None,
 ) -> None:
     """Generate bounded structured strategy output."""
     context = _context(project)
     try:
-        run_id = synthesize_stage(context)
+        _, _, provider = _offline_boundaries(offline_fixture)
+        run_id = synthesize_stage(context, provider=provider)
     except Exception as error:
         typer.echo(f"synthesis failed: {str(error)[:500]}", err=True)
         raise typer.Exit(code=1) from error
@@ -246,15 +281,20 @@ def run(
     scope: Annotated[
         str, typer.Option("--scope", help="Classification scope.")
     ] = "unclassified-only",
+    offline_fixture: Annotated[
+        Path | None,
+        typer.Option("--offline-fixture", help="Use an explicit local JSON fixture."),
+    ] = None,
 ) -> None:
     """Run collection, classification, aggregation, and synthesis in order."""
     context = _context(project)
     try:
-        crawl_store(context)
-        crawl_reviews_stage(context)
-        classify_stage(context, scope=scope)  # type: ignore[arg-type]
+        review_source, store_fetcher, provider = _offline_boundaries(offline_fixture)
+        crawl_store(context, fetcher=store_fetcher)
+        crawl_reviews_stage(context, source=review_source)
+        classify_stage(context, scope=scope, provider=provider)  # type: ignore[arg-type]
         aggregate_stage(context)
-        run_id = synthesize_stage(context)
+        run_id = synthesize_stage(context, provider=provider)
     except Exception as error:
         typer.echo(f"pipeline failed: {str(error)[:500]}", err=True)
         raise typer.Exit(code=1) from error
@@ -288,11 +328,17 @@ def export_report_command(
     output: Annotated[
         Path, typer.Option("--output", help="Markdown output path.")
     ] = Path("strategy-brief.md"),
+    min_words: Annotated[
+        int, typer.Option("--min-words", help="Minimum report words.")
+    ] = 1500,
+    max_words: Annotated[
+        int, typer.Option("--max-words", help="Maximum report words.")
+    ] = 3000,
 ) -> None:
     """Render the latest validated synthesis as Markdown."""
     context = _context(project)
     try:
-        path = export_report(context, output)
+        path = export_report(context, output, min_words=min_words, max_words=max_words)
     except Exception as error:
         typer.echo(f"report export failed: {str(error)[:500]}", err=True)
         raise typer.Exit(code=1) from error

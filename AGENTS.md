@@ -89,7 +89,7 @@ The default tests are offline. Keep `uv.lock` committed and run `uv lock` only w
 
 ## Steam collection fixture conventions
 
-Sanitized Steam responses belong under `tests/unit/fixtures/steam/` and must contain only fields needed by contract or adapter tests. Do not include credentials, profile identifiers, complete real review corpora, or full review text in diagnostics. Contract tests must remain offline; external HTTP boundary fakes or fixture transports are acceptable when their use is documented. The review adapter uses `curl_cffi`; keep network tests opt-in and never log full review text.
+Sanitized Steam responses belong under `tests/unit/fixtures/steam/` and must contain only fields needed by contract or adapter tests. Do not include credentials, profile identifiers, complete real review corpora, or full review text in diagnostics. Contract tests must remain offline; external HTTP boundary fakes or fixture transports are acceptable when their use is documented. The review adapter uses `curl_cffi`; keep network tests opt-in and never log full review text. T063's explicit `--offline-fixture` CLI option accepts only local JSON fixtures and injects store/review/provider boundaries without changing live defaults.
 
 ## Current repository structure
 

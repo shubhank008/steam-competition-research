@@ -2,7 +2,7 @@
 
 Steam Competition Research is a planned CLI pipeline for turning Steam store metadata and large review corpora into a concise, evidence-backed competitive strategy brief. It is designed for product owners and developers who need to understand competitors, find market gaps, prioritize features, avoid technical failures, and improve Steam positioning.
 
-The repository is at the **cohesive CLI orchestration foundation** stage. T001 provides the package feedback loop; T012/T013 provide run tracking and canonical review storage; T022/T023 add dual-stream crawling, durable page checkpoints, retries, cancellation, incremental overlap, source-hash comparison, and polarity-safe refreshes; T030/T031 add versioned eligibility decisions and universal/project taxonomy loading; T040 adds capability-gated OpenCode Go structured generation contracts; T041 adds the versioned Stage 1 schema, prompt delimiters, taxonomy validation, and evidence checks; T042/T043 add SQLite-backed token-aware batching, bounded repair/split/quarantine, lineage, deterministic scope selection, and resumable ceilings; T044 adds a synthetic multilingual gold-set fixture and deterministic offline evaluator. Aggregation, bounded synthesis, deterministic reporting, and the cohesive CLI command surface are implemented; full offline fixture orchestration and live operational hardening remain in progress under T063. See [PLAN.md](PLAN.md) for the implementation sequence.
+The repository is at the **cohesive CLI orchestration foundation** stage. T001 provides the package feedback loop; T012/T013 provide run tracking and canonical review storage; T022/T023 add dual-stream crawling, durable page checkpoints, retries, cancellation, incremental overlap, source-hash comparison, and polarity-safe refreshes; T030/T031 add versioned eligibility decisions and universal/project taxonomy loading; T040 adds capability-gated OpenCode Go structured generation contracts; T041 adds the versioned Stage 1 schema, prompt delimiters, taxonomy validation, and evidence checks; T042/T043 add SQLite-backed token-aware batching, bounded repair/split/quarantine, lineage, deterministic scope selection, and resumable ceilings; T044 adds a synthetic multilingual gold-set fixture and deterministic offline evaluator. Aggregation, bounded synthesis, deterministic reporting, and the cohesive CLI command surface are implemented; T063 now includes explicit offline CLI fixture orchestration and interruption-aware state handling, while later operational hardening remains planned. See [PLAN.md](PLAN.md) for the implementation sequence.
 
 ## What the system will do
 
@@ -79,7 +79,7 @@ Planned major components:
 
 ## Implemented foundation
 
-T001 provides the package foundation; T012/T013 provide resumable run/unit persistence and canonical review storage; T021 provides the one-page Steam adapter; T022/T023 provide the resumable dual-stream crawler and safe incremental refresh; T063 provides the stage command surface and runner wiring. Offline end-to-end fixture injection and further interruption/live-boundary hardening remain tracked by T063/T070/T073.
+T001 provides the package foundation; T012/T013 provide resumable run/unit persistence and canonical review storage; T021 provides the one-page Steam adapter; T022/T023 provide the resumable dual-stream crawler and safe incremental refresh; T063 provides the stage command surface, runner wiring, explicit offline fixture injection, interruption-aware state transitions, and multi-competitor end-to-end coverage. Further operational hardening remains tracked by T070/T071/T073.
 
 - Python 3.12 or newer
 - `uv` for the environment and locked dependencies
@@ -103,9 +103,11 @@ steam-research synthesize --project PATH
 steam-research run --project PATH
 steam-research export parquet --project PATH --output exports
 steam-research export report --project PATH --output strategy-brief.md
+steam-research run --project PATH --offline-fixture tests/fixtures/pipeline.json
+steam-research export report --project PATH --output brief.md --min-words 1 --max-words 300
 ```
 
-`run` executes collection, resumable review crawling, eligibility/classification, deterministic aggregation, and Stage 2 synthesis in order. Stage commands persist run and unit state; partial app or provider failures are visible in `status` and return a non-zero exit code when the requested stage cannot complete. `--json` serializes the same persisted run/unit view used by the human status command. Store/review collection and configured model providers are live boundaries; default tests use offline fixture sources/providers and never require credentials.
+`run` executes collection, resumable review crawling, eligibility/classification, deterministic aggregation, and Stage 2 synthesis in order. Stage commands persist run and unit state; partial app or provider failures are visible in `status` and return a non-zero exit code when the requested stage cannot complete. Keyboard interruption records cancelled run/unit state, while durable review checkpoints remain resumable. `--json` serializes the same persisted run/unit view used by the human status command. Store/review collection and configured model providers are live boundaries by default. The explicit `--offline-fixture PATH` option injects a local JSON fixture into store, review, and provider boundaries for deterministic tests; it never changes production defaults or reads credentials. Report word limits are configurable for small fixture reports, with production defaults of 1500–3000 words.
 
 Each project stores its canonical SQLite database at `PATH/project.sqlite3` and its starter configuration at `PATH/project.toml`. SQLite uses WAL mode and enforces foreign keys. Repeating a competitor addition is idempotent and reports `Already present`; invalid app input fails before inserting a row.
 

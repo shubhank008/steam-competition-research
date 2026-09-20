@@ -261,12 +261,21 @@ def export_parquet(
         count = 0
         try:
             cursor = database.connection.execute(*queries[dataset])
-            names = [name for name, _ in columns]
             while True:
                 rows = cursor.fetchmany(chunk_size)
                 if not rows:
                     break
-                records = [{name: row[name] for name in names} for row in rows]
+                records = []
+                for row in rows:
+                    record = {}
+                    for name, type_name in columns:
+                        value = row[name]
+                        record[name] = (
+                            bool(value)
+                            if type_name == "bool" and value is not None
+                            else value
+                        )
+                    records.append(record)
                 table = pa.Table.from_pylist(records, schema=schema)
                 writer.write_table(table)
                 count += len(records)

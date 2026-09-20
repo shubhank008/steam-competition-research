@@ -419,7 +419,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Human and JSON status agree.
 - **Suggested commits:** stage commands; full runner; end-to-end tests/docs.
 
-- **Progress note (2026-07-08):** Added `steam_research.pipeline` and Typer commands for store/review crawl, scoped classification, aggregate, synthesis, `run`, Parquet/report export, and persisted human/JSON status. Existing services remain the source of truth for crawl/classification/aggregate/synthesis lineage; default tests remain offline. T063 stays `[~]` because fixture-provider injection through the public CLI, interruption-specific transitions, and complete multi-competitor end-to-end CLI coverage still require follow-up.
+- **Progress note (2026-07-08):** Added `steam_research.pipeline` and Typer commands for store/review crawl, scoped classification, aggregate, synthesis, `run`, Parquet/report export, and persisted human/JSON status. The explicit local-only `--offline-fixture` option now injects sanitized store/review/provider boundaries without changing live defaults; interruptions persist cancelled run/unit state and review checkpoints remain resumable; a two-competitor CLI regression covers init/add, full pipeline, status JSON, Parquet, and report exports. Existing services remain the source of truth for lineage. T063 remains `[~]` pending merge per repository workflow.
 
 
 ## 10. Phase 7 — Hardening and MVP release

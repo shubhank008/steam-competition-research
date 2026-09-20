@@ -149,7 +149,12 @@ def _safe_error(error: BaseException) -> str:
     return text[:500] or type(error).__name__
 
 
-def crawl_store(context: ProjectContext, appids: Iterable[int] | None = None) -> str:
+def crawl_store(
+    context: ProjectContext,
+    appids: Iterable[int] | None = None,
+    *,
+    fetcher: Any | None = None,
+) -> str:
     with Database(context.database) as database:
         run = _run(
             database,
@@ -164,7 +169,7 @@ def crawl_store(context: ProjectContext, appids: Iterable[int] | None = None) ->
             appids or (competitor.appid for competitor in context.competitors)
         )
         failures = 0
-        fetcher = CurlCffiStorePageFetcher()
+        fetcher = fetcher or CurlCffiStorePageFetcher()
         parser = StoreMetadataParser()
         for competitor in context.competitors:
             if competitor.appid not in selected:
@@ -182,6 +187,10 @@ def crawl_store(context: ProjectContext, appids: Iterable[int] | None = None) ->
                 persist_store_snapshot(
                     database, project_id=context.project_id, snapshot=snapshot
                 )
+            except KeyboardInterrupt:
+                _done(database, unit, UnitStatus.CANCELLED, "interrupted")
+                _finish(database, run, RunStatus.CANCELLED, "interrupted")
+                return str(run.id)
             except Exception as error:
                 failures += 1
                 _done(database, unit, UnitStatus.FAILED, _safe_error(error))
@@ -236,6 +245,10 @@ def crawl_reviews_stage(
                     ),
                     incremental=True,
                 )
+            except KeyboardInterrupt:
+                _done(database, unit, UnitStatus.CANCELLED, "interrupted")
+                _finish(database, run, RunStatus.CANCELLED, "interrupted")
+                return str(run.id)
             except Exception as error:
                 failures += 1
                 _done(database, unit, UnitStatus.FAILED, _safe_error(error))
@@ -370,7 +383,13 @@ def synthesize_stage(
         )
 
 
-def export_report(context: ProjectContext, output: Path) -> Path:
+def export_report(
+    context: ProjectContext,
+    output: Path,
+    *,
+    min_words: int = 1500,
+    max_words: int = 3000,
+) -> Path:
     with Database(context.database) as database:
         output_data, payload_data = load_synthesis_output(
             database, _latest_synthesis(database, context.project_id)
@@ -378,7 +397,7 @@ def export_report(context: ProjectContext, output: Path) -> Path:
         text = render_markdown(
             output_from_dict(output_data),
             payload_from_dict(payload_data),
-            limits=ReportLimits(),
+            limits=ReportLimits(min_words=min_words, max_words=max_words),
         )
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(text, encoding="utf-8")

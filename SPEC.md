@@ -791,7 +791,7 @@ steam-research export parquet
 steam-research export report
 ```
 
-T063 adds the Typer command groups and wires them to the existing services: `crawl store`, `crawl reviews`, `classify --scope`, `aggregate`, `synthesize`, `run`, and `export parquet|report`. Each mutating stage uses the existing SQLite run/unit lifecycle; collection and provider boundaries are injectable in service calls for offline tests, while the installed CLI uses live adapters and runtime-only credentials. `status` and `status --json` read the same persisted view. Public CLI fixture injection and interruption-specific signal handling remain deferred while T063 is `[~]`.
+T063 adds the Typer command groups and wires them to the existing services: `crawl store`, `crawl reviews`, `classify --scope`, `aggregate`, `synthesize`, `run`, and `export parquet|report`. Each mutating stage uses the existing SQLite run/unit lifecycle; collection and provider boundaries are injectable in service calls and through the explicit local-only `--offline-fixture PATH` CLI option, while the default installed CLI uses live adapters and runtime-only credentials. `status` and `status --json` read the same persisted view. Keyboard interruption records cancelled run/unit state and leaves durable review checkpoints resumable. Report word limits are configurable for small offline fixtures while production defaults remain enforced.
 
 Commands must:
 
