@@ -107,6 +107,52 @@ steam-research run --project PATH --offline-fixture tests/fixtures/pipeline.json
 steam-research export report --project PATH --output brief.md --min-words 1 --max-words 300
 ```
 
+### Opt-in live Steam smoke
+
+T073 live validation is deliberately separate from the default offline test suite. The bounded smoke uses public app ID `440` (Team Fortress 2), makes one store appdetails request and one review API request for each polarity, requests the adapter maximum page size of 100, performs no retries, and does not persist a project database or response bodies. Run it from the repository root with:
+
+```bash
+uv run python - <<'PY'
+import json, time
+from steam_research.domain import AppId, ExternalError
+from steam_research.steam.contracts import ReviewPageRequest, StorePageRequest
+from steam_research.steam.reviews import SteamReviewApi
+from steam_research.steam.store import CurlCffiStorePageFetcher
+
+app = AppId(440)
+out = {"appid": 440, "store": {}, "reviews": []}
+start = time.perf_counter()
+try:
+    data = CurlCffiStorePageFetcher().fetch_structured(
+        StorePageRequest(app, country_code="US", language="english", timeout_seconds=10)
+    )
+    out["store"] = {"success": data is not None, "field_count": len(data or {}),
+                    "duration_ms": round((time.perf_counter() - start) * 1000)}
+except Exception as exc:
+    out["store"] = {"success": False, "error_classification": type(exc).__name__,
+                    "duration_ms": round((time.perf_counter() - start) * 1000)}
+api = SteamReviewApi()
+for polarity in ("positive", "negative"):
+    start = time.perf_counter()
+    try:
+        page = api.fetch_page(ReviewPageRequest(
+            app, review_type=polarity, page_size=100, timeout_seconds=10
+        ))
+        out["reviews"].append({"polarity": polarity, "success": True,
+            "count": len(page.reviews), "cursor_present": bool(page.cursor),
+            "duration_ms": round((time.perf_counter() - start) * 1000)})
+    except ExternalError as exc:
+        out["reviews"].append({"polarity": polarity, "success": False,
+            "error_classification": exc.code.value,
+            "duration_ms": round((time.perf_counter() - start) * 1000)})
+print(json.dumps(out, sort_keys=True))
+PY
+```
+
+The canonical adapter calls are `CurlCffiStorePageFetcher.fetch_structured(StorePageRequest(AppId(440), country_code="US", language="english", timeout_seconds=10))` against `https://store.steampowered.com/api/appdetails`, followed by `SteamReviewApi.fetch_page(ReviewPageRequest(AppId(440), review_type="positive"|"negative", page_size=100, timeout_seconds=10))` against `https://store.steampowered.com/appreviews/440`. Keep any temporary workspace outside the repository (for example, `tempfile.TemporaryDirectory`); never print or save review text, raw responses, profile IDs, cookies, credentials, or generated exports. Stop after the first denial or error and do not use browser fallback.
+
+On 2026-09-20T17:13:05Z in the current container, the store request succeeded in 462 ms and returned 35 structured fields; positive and negative review requests each succeeded with 100 reviews and cursors in 767 ms and 649 ms. No provider request was made: configured credential names were present in the environment, but T073’s bounded provider smoke contract and a safe non-persisting provider fixture are not exposed as a CLI command. These results validate endpoint/adapter compatibility only and are not production-readiness evidence.
+
 `run` executes collection, resumable review crawling, eligibility/classification, deterministic aggregation, and Stage 2 synthesis in order. Stage commands persist run and unit state; partial app or provider failures are visible in `status` and return a non-zero exit code when the requested stage cannot complete. Keyboard interruption records cancelled run/unit state, while durable review checkpoints remain resumable. `--json` serializes the same persisted run/unit view used by the human status command. Store/review collection and configured model providers are live boundaries by default. The explicit `--offline-fixture PATH` option injects a local JSON fixture into store, review, and provider boundaries for deterministic tests; it never changes production defaults or reads credentials. Report word limits are configurable for small fixture reports, with production defaults of 1500–3000 words.
 
 ### Diagnostics and security boundaries
