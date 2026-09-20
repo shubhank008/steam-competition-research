@@ -131,6 +131,14 @@ def status(
                         f"  {unit['unit_key']}\t{unit['status']}\t"
                         f"attempt={unit['attempt']}"
                     )
+                for diagnostic in run.diagnostics:
+                    typer.echo(
+                        "  diagnostic\t"
+                        f"stage={diagnostic['stage']}\tapp={diagnostic['appid']}\t"
+                        f"duration_ms={diagnostic['duration_ms']}\t"
+                        f"result_count={diagnostic['result_count']}\t"
+                        f"error={diagnostic['error_classification'] or '-'}"
+                    )
     except (ProjectError, FileNotFoundError) as error:
         raise typer.BadParameter(str(error)) from error
 
