@@ -13,7 +13,7 @@ from steam_research.projects import (
     list_competitors,
     project_paths,
 )
-from steam_research.storage import Database
+from steam_research.storage import Database, status_json, status_view
 
 app = typer.Typer(
     add_completion=False,
@@ -85,6 +85,33 @@ def app_list(
         raise typer.BadParameter(str(error)) from error
     for competitor in competitors:
         typer.echo(f"{competitor.appid}\t{competitor.store_url}")
+
+
+@app.command()
+def status(
+    project: Annotated[
+        Path, typer.Option("--project", help="Project directory.")
+    ] = Path("."),
+    as_json: Annotated[
+        bool, typer.Option("--json", help="Emit machine-readable JSON.")
+    ] = False,
+) -> None:
+    """Show persisted pipeline runs and child work units."""
+    try:
+        with Database(project_paths(project).database) as database:
+            database.migrate()
+            if as_json:
+                typer.echo(status_json(database))
+                return
+            for run in status_view(database):
+                typer.echo(f"{run.run_type}\t{run.status}\t{run.id}")
+                for unit in run.units:
+                    typer.echo(
+                        f"  {unit['unit_key']}\t{unit['status']}\t"
+                        f"attempt={unit['attempt']}"
+                    )
+    except (ProjectError, FileNotFoundError) as error:
+        raise typer.BadParameter(str(error)) from error
 
 
 if __name__ == "__main__":
