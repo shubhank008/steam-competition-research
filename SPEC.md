@@ -338,6 +338,8 @@ source_content_hash
 
 The implementation should prefer stable structured Steam responses for fields they reliably expose and parse HTML only for missing fields. Field provenance may be recorded when values come from several sources.
 
+Field provenance is a per-contract-field map such as `title -> appdetails` or `title -> html`. The T024 HTTP fetcher requests localized HTML and appdetails JSON independently; the parser accepts both and never performs network I/O. Snapshots retain country and language independently, optional-field warnings, and normalized payload JSON in SQLite.
+
 ## 10. Review collection
 
 ### 9.1 Collection contract and fixture policy

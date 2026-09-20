@@ -195,7 +195,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - High-water state does not advance after partial failure.
 - **Suggested commits:** high-water state; overlap algorithm; mutation/failure tests/docs.
 
-### [ ] T024: Implement store metadata parsing with `curl_cffi`
+### [~] T024: Implement store metadata parsing with `curl_cffi`
 
 - **Suggested branch:** `feat/store-page-http`
 - **Depends on:** T010, T011, T020

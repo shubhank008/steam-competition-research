@@ -149,7 +149,39 @@ def _migration_3(connection: sqlite3.Connection) -> None:
         pass
 
 
-MIGRATIONS: tuple[Migration, ...] = (_migration_1, _migration_2, _migration_3)
+def _migration_4(connection: sqlite3.Connection) -> None:
+    connection.executescript(
+        """
+        CREATE TABLE store_page_snapshots (
+            id TEXT PRIMARY KEY NOT NULL,
+            project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            appid INTEGER NOT NULL CHECK (appid > 0),
+            source_url TEXT NOT NULL,
+            country_code TEXT NOT NULL,
+            store_language TEXT NOT NULL,
+            currency TEXT,
+            fetched_at TEXT NOT NULL,
+            fetch_adapter TEXT NOT NULL,
+            parser_schema_version TEXT NOT NULL,
+            payload_json TEXT NOT NULL CHECK (json_valid(payload_json)),
+            warnings_json TEXT NOT NULL CHECK (json_valid(warnings_json)),
+            provenance_json TEXT NOT NULL CHECK (json_valid(provenance_json)),
+            source_content_hash TEXT NOT NULL
+        );
+        CREATE INDEX store_snapshots_app_fetched_idx
+            ON store_page_snapshots(project_id, appid, fetched_at);
+        CREATE INDEX store_snapshots_hash_idx
+            ON store_page_snapshots(project_id, appid, source_content_hash);
+        """
+    )
+
+
+MIGRATIONS: tuple[Migration, ...] = (
+    _migration_1,
+    _migration_2,
+    _migration_3,
+    _migration_4,
+)
 
 
 def migrate(connection: sqlite3.Connection) -> None:

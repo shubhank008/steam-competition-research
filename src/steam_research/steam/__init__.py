@@ -19,6 +19,14 @@ from steam_research.steam.crawler import (
     crawl_reviews,
 )
 from steam_research.steam.reviews import CurlCffiTransport, HttpResponse, SteamReviewApi
+from steam_research.steam.store import (
+    CurlCffiStorePageFetcher,
+    FetchedDocument,
+    StoreMetadataParser,
+    StorePageFetcher,
+    StorePageParser,
+    StorePageSnapshot,
+)
 
 __all__ = [
     "CrawlCancelled",
@@ -38,4 +46,10 @@ __all__ = [
     "classify_http_error",
     "source_hash",
     "validate_review_payload",
+    "CurlCffiStorePageFetcher",
+    "FetchedDocument",
+    "StoreMetadataParser",
+    "StorePageFetcher",
+    "StorePageParser",
+    "StorePageSnapshot",
 ]

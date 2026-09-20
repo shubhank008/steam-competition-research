@@ -21,7 +21,7 @@ def test_empty_database_migrates_to_current_schema(database: Database) -> None:
         database.connection.execute(
             "SELECT COUNT(*) FROM schema_migrations"
         ).fetchone()[0]
-        == 3
+        == 4
     )
 
 
@@ -33,7 +33,7 @@ def test_reapplying_migrations_is_idempotent(database: Database) -> None:
         database.connection.execute(
             "SELECT COUNT(*) FROM schema_migrations"
         ).fetchone()[0]
-        == 3
+        == 4
     )
 
 

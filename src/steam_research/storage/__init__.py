@@ -21,6 +21,7 @@ from steam_research.storage.runs import (
     transition_run,
     transition_unit,
 )
+from steam_research.storage.store import persist_store_snapshot, query_store_snapshots
 
 __all__ = [
     "Database",
@@ -40,4 +41,6 @@ __all__ = [
     "status_view",
     "transition_run",
     "transition_unit",
+    "persist_store_snapshot",
+    "query_store_snapshots",
 ]
