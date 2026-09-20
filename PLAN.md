@@ -475,11 +475,11 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Failures become sanitized fixtures or targeted tests where permitted.
   - README records exactly how to repeat the smoke test.
 - **Suggested commits:** smoke command/config; discovered compatibility fixes; docs.
-- **Progress note (2026-09-20T17:13:05Z):** Performed one live, non-persisting adapter smoke from the current Linux container against public app ID `440`. The exact calls were `CurlCffiStorePageFetcher.fetch_structured(StorePageRequest(AppId(440), country_code="US", language="english", timeout_seconds=10))` at `https://store.steampowered.com/api/appdetails` and `SteamReviewApi.fetch_page(ReviewPageRequest(AppId(440), review_type="positive"|"negative", page_size=100, timeout_seconds=10))` at `https://store.steampowered.com/appreviews/440`. The store endpoint succeeded with 35 structured fields in 462 ms; positive and negative pages each succeeded with 100 reviews and cursors in 767 ms and 649 ms. There were no retries, no browser calls, no database, exports, or response-body artifacts, and only sanitized counts/status/timings were emitted. Provider smoke was skipped without failure: credential names were present, but no bounded provider smoke command/fixture exists in the current CLI and no provider request was made. This validates public endpoint/adapter compatibility only, not production readiness. README contains the repeat procedure and privacy/rate limitations. T073 remains `[~]` until review/merge and any desired provider smoke contract are resolved.
+- **Progress note (2026-07-08T13:36:31Z):** Performed one live, non-persisting adapter smoke from the current Linux container against public app ID `440`. The exact calls were `CurlCffiStorePageFetcher.fetch_structured(StorePageRequest(AppId(440), country_code="US", language="english", timeout_seconds=10))` at `https://store.steampowered.com/api/appdetails` and `SteamReviewApi.fetch_page(ReviewPageRequest(AppId(440), review_type="positive"|"negative", page_size=100, timeout_seconds=10))` at `https://store.steampowered.com/appreviews/440`. The store endpoint succeeded with 35 structured fields in 462 ms; positive and negative pages each succeeded with 100 reviews and cursors in 767 ms and 649 ms. There were no retries, no browser calls, no database, exports, or response-body artifacts, and only sanitized counts/status/timings were emitted. Provider smoke was skipped without failure: credential names were present, but no bounded provider smoke command/fixture exists in the current CLI and no provider request was made. This validates public endpoint/adapter compatibility only, not production readiness. README contains the repeat procedure and privacy/rate limitations. T073 remains `[~]` until review/merge and any desired provider smoke contract are resolved.
 
-### [ ] T074: Prepare MVP release candidate
+### [~] T074: Prepare MVP release candidate
 
-- **Suggested branch:** `release/mvp-readiness`
+- **Suggested branch:** `release/mvp-readiness` (not created per verification request; current branch retained)
 - **Depends on:** T044, T071, T072, T073
 - **PRD:** all MVP success metrics
 - **Scope:** Verify installation, migrations, full fixture pipeline, evaluation thresholds, docs, examples, packaging, and clean-room setup.
@@ -490,6 +490,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - PLAN statuses and deferred work are accurate.
   - Release notes summarize user-visible behavior and known constraints.
 - **Suggested commits:** readiness fixes grouped by subsystem; final docs/release metadata.
+- **Verification note (2026-07-08):** In isolated `/tmp/steam-t074-1tUmiA`, `uv sync --locked --extra parquet`, full `uv run pytest` (125 passed), Ruff format/check, mypy, CLI help/version, `uv build`, exact offline pipeline regression, and wheel install/console smoke all passed. PyArrow export and generated Markdown/status assertions are covered by the passing two-competitor test. Tracked-artifact and `.gitignore` checks found no runtime databases, Parquet, browser state, `.env`, or secrets. No external secret scanner was installed; targeted repository scans found no credential literals. T073's provider smoke remains explicitly skipped because no bounded provider smoke command/fixture exists; live Steam compatibility is not production-readiness evidence. This task is `[~]` ready for review, not `[x]` complete until branch review/merge and any release-note policy decision.
 
 ## 11. Optional post-MVP epics
 

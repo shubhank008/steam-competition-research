@@ -2,7 +2,7 @@
 
 Steam Competition Research is a planned CLI pipeline for turning Steam store metadata and large review corpora into a concise, evidence-backed competitive strategy brief. It is designed for product owners and developers who need to understand competitors, find market gaps, prioritize features, avoid technical failures, and improve Steam positioning.
 
-The repository is at the **operational hardening foundation** stage. T001 provides the package feedback loop; T012/T013 provide run tracking and canonical review storage; T022/T023 add dual-stream crawling, durable page checkpoints, retries, cancellation, incremental overlap, source-hash comparison, and polarity-safe refreshes; T030/T031 add versioned eligibility decisions and universal/project taxonomy loading; T040 adds capability-gated OpenCode Go structured generation contracts; T041 adds the versioned Stage 1 schema, prompt delimiters, taxonomy validation, and evidence checks; T042/T043 add SQLite-backed token-aware batching, bounded repair/split/quarantine, lineage, deterministic scope selection, and resumable ceilings; T044 adds a synthetic multilingual gold-set fixture and deterministic offline evaluator. Aggregation, bounded synthesis, deterministic reporting, cohesive CLI orchestration, migration-9 local diagnostics, and initial security hardening are implemented; T070/T071 remain in progress pending full validation. See [PLAN.md](PLAN.md) for the implementation sequence.
+The repository is at the **release-candidate verification** stage. T001–T073 are implemented on this branch; T072 has documented synthetic scale measurements, and T073 has documented bounded live Steam adapter smoke with provider smoke explicitly skipped. T074 records clean-room verification and release limitations; it is ready for review but is not a production-readiness claim. See [PLAN.md](PLAN.md) for the implementation sequence.
 
 ## What the system will do
 
@@ -68,7 +68,7 @@ Planned major components:
 - Python CLI
 - typed project configuration, explicit precedence, and sanitized run manifests
 - framework-independent domain IDs, statuses, transitions, results, timestamps, hashes, and error taxonomy
-- `curl_cffi` Steam review API adapter with resumable dual-stream crawler and incremental refresh (T021–T023 in progress; offline fixture tests)
+- `curl_cffi` Steam review API adapter with resumable dual-stream crawler and incremental refresh (T021–T023 implemented; live collection remains opt-in)
 - Optional Patchright store-page fallback for explicit denial/challenge responses; install `patchright` and its browser binaries only when browser fallback is needed
 - SQLite migrations and repositories
 - OpenAI-compatible LLM provider adapter, initially configured for OpenCode Go
@@ -79,7 +79,7 @@ Planned major components:
 
 ## Implemented foundation
 
-T001 provides the package foundation; T012/T013 provide resumable run/unit persistence and canonical review storage; T021 provides the one-page Steam adapter; T022/T023 provide the resumable dual-stream crawler and safe incremental refresh; T063 provides the stage command surface, runner wiring, explicit offline fixture injection, interruption-aware state transitions, and multi-competitor end-to-end coverage. Further operational hardening remains tracked by T070/T071/T073.
+T001–T073 provide the package, storage, collection, filtering, taxonomy, classification, aggregation, synthesis, reporting, cohesive CLI pipeline, diagnostics, scale harness, and security-hardening foundations. T074 verifies the release candidate in a clean temporary environment. Provider requests remain opt-in and were not made by the release verification.
 
 - Python 3.12 or newer
 - `uv` for the environment and locked dependencies
@@ -151,7 +151,7 @@ PY
 
 The canonical adapter calls are `CurlCffiStorePageFetcher.fetch_structured(StorePageRequest(AppId(440), country_code="US", language="english", timeout_seconds=10))` against `https://store.steampowered.com/api/appdetails`, followed by `SteamReviewApi.fetch_page(ReviewPageRequest(AppId(440), review_type="positive"|"negative", page_size=100, timeout_seconds=10))` against `https://store.steampowered.com/appreviews/440`. Keep any temporary workspace outside the repository (for example, `tempfile.TemporaryDirectory`); never print or save review text, raw responses, profile IDs, cookies, credentials, or generated exports. Stop after the first denial or error and do not use browser fallback.
 
-On 2026-09-20T17:13:05Z in the current container, the store request succeeded in 462 ms and returned 35 structured fields; positive and negative review requests each succeeded with 100 reviews and cursors in 767 ms and 649 ms. No provider request was made: configured credential names were present in the environment, but T073’s bounded provider smoke contract and a safe non-persisting provider fixture are not exposed as a CLI command. These results validate endpoint/adapter compatibility only and are not production-readiness evidence.
+On 2026-07-08T13:36:31Z in the current container, the store request succeeded in 462 ms and returned 35 structured fields; positive and negative review requests each succeeded with 100 reviews and cursors in 767 ms and 649 ms. No provider request was made: configured credential names were present in the environment, but T073’s bounded provider smoke contract and a safe non-persisting provider fixture are not exposed as a CLI command. These results validate endpoint/adapter compatibility only and are not production-readiness evidence.
 
 `run` executes collection, resumable review crawling, eligibility/classification, deterministic aggregation, and Stage 2 synthesis in order. Stage commands persist run and unit state; partial app or provider failures are visible in `status` and return a non-zero exit code when the requested stage cannot complete. Keyboard interruption records cancelled run/unit state, while durable review checkpoints remain resumable. `--json` serializes the same persisted run/unit view used by the human status command. Store/review collection and configured model providers are live boundaries by default. The explicit `--offline-fixture PATH` option injects a local JSON fixture into store, review, and provider boundaries for deterministic tests; it never changes production defaults or reads credentials. Report word limits are configurable for small fixture reports, with production defaults of 1500–3000 words.
 
@@ -229,7 +229,7 @@ steam-research export parquet
 steam-research export report
 ```
 
-These commands do not exist yet. T001 creates the package and initial CLI entry point.
+The implemented command surface is exercised by the offline CLI regression and the clean-room checks recorded in T074.
 
 ## Configuration approach
 
@@ -254,22 +254,23 @@ Taxonomies are safe-loaded from YAML. Use `config/taxonomies/universal-core.yaml
 | Technical specification | Complete initial version |
 | Agentic implementation plan | Complete initial version |
 | Python package and CLI | T001 complete |
-| Typed configuration and manifests | T002 in progress ([~]) |
-| Domain contracts and errors | T003 in progress ([~]) |
-| SQLite storage | T010 in progress ([~]) |
-| Project and competitor management | T011 in progress ([~]) |
-| Run tracking and status | T012 in progress ([~]) |
-| Source review storage and query API | T013 in progress ([~]) |
-| Steam collection contracts and fixtures | In progress (T020) |
-| Stage 1 classification | Not started |
-| Aggregation | Implemented (T050/T051 [~]) |
-| Stage 2 strategy brief | In progress (T061/T062 [~]) |
-| Cohesive CLI pipeline | In progress (T063 [~]) |
-| Scale benchmark harness | Implemented and measured (T072 [~]) |
+| Typed configuration and manifests | Implemented (T002) |
+| Domain contracts and errors | Implemented (T003) |
+| SQLite storage and project management | Implemented (T010–T013) |
+| Steam collection contracts and fixtures | Implemented (T020–T025) |
+| Eligibility and taxonomy | Implemented (T030–T031) |
+| Stage 1 classification and evaluation | Implemented (T040–T044) |
+| Aggregation and Parquet export | Implemented (T050–T052) |
+| Stage 2 strategy brief | Implemented (T060–T062) |
+| Cohesive CLI pipeline | Implemented (T063) |
+| Diagnostics and security hardening | Implemented (T070–T071) |
+| Scale benchmark harness | Implemented and measured (T072) |
+| Live Steam/provider smoke | Steam adapter smoke documented; provider smoke skipped (T073) |
+| Release-candidate verification | In progress ([~] T074) |
 
 T072 adds an offline scale harness at `tests/benchmarks/scale_benchmark.py`. Repeat seeded 100k/1M measurements with `uv run python tests/benchmarks/scale_benchmark.py --size 100000 --size 1000000 --seed-fraction 0.01 --no-export`; include the optional writer on 100k with `uv run python tests/benchmarks/scale_benchmark.py --size 100000 --seed-fraction 0.01`. `--seed-fraction` creates a deterministic, bounded analytical subset (maximum 100k rows) with eligibility decisions and successful Stage 1 lineage/aspects; it does not call a provider. The harness generates data in code, uses temporary SQLite/Parquet paths, requires no network or credentials, and reports JSON database size, ingest, query, aggregate, evidence, classification planning, export rows/time, and peak-RSS measurements. On 2026-07-08 in the current Linux x86_64 container (6 CPUs, Python 3.13.14, uv 0.12.0), the 100k seeded run used 86,786,048 bytes, ingested in 13.204s, aggregated 1,000 rows in 0.040s, selected 9 evidence rows in 0.025s, and exported 100,000 reviews plus 1,000 classifications and aspects in 1.798s at 114.9 MiB peak RSS. The 1M no-export run used 902,270,976 bytes, ingested in 213.022s, aggregated 10,000 rows in 0.406s, selected 9 evidence rows in 0.246s, and held 88.5 MiB peak RSS. 1M export was omitted because ingest already takes several minutes; 100k covers the bounded Parquet writer path. Live smoke and provider execution remain out of scope.
 
-The project is ready to continue **T063: Orchestrate full CLI pipeline** from [PLAN.md](PLAN.md).
+The project is ready for review of **T074: Prepare MVP release candidate** from [PLAN.md](PLAN.md). T074 verification covers clean-room installation, offline behavior, packaging, and artifact hygiene; it does not establish production readiness or validate provider behavior.
 
 ## Contribution workflow
 
