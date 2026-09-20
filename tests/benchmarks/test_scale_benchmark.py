@@ -20,7 +20,20 @@ def test_small_generated_project_exercises_bounded_paths() -> None:
     assert result["size"] == 25
     assert result["database_bytes"] > 0
     assert result["aggregate_source_population"] == 0
+    assert result["aggregate_classified_population"] == 0
+    assert result["evidence_rows"] == 0
     assert result["query_groups"] == 6
     assert result["classification"]["batch_plan_sample_size"] == 25
     assert result["export_seconds"] is None
     assert not list(Path(".").glob("steam-scale-*/project.sqlite3"))
+
+
+def test_seeded_project_exercises_aggregate_and_evidence_paths() -> None:
+    result = benchmark(100, chunk_size=17, include_export=False, seed_fraction=0.2)
+
+    assert result["seeded_classification_count"] == 20
+    assert result["aggregate_source_population"] == 20
+    assert result["aggregate_classified_population"] == 20
+    assert result["evidence_rows"] > 0
+    assert result["aggregate_seconds"] >= 0
+    assert result["evidence_seconds"] >= 0
