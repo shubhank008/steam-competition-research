@@ -1,0 +1,39 @@
+version: "1"
+name: universal-core
+categories:
+  - id: technical.stability
+    name: Stability
+    description: Crashes, freezes, errors, and reliability.
+  - id: technical.performance
+    name: Performance
+    description: CPU, GPU, memory, latency, and loading performance.
+  - id: compatibility.platform
+    name: Compatibility and platform
+    description: Operating systems, hardware, controllers, and platform support.
+  - id: usability
+    name: Usability
+    description: Ease of learning, navigation, and interaction.
+  - id: accessibility
+    name: Accessibility
+    description: Accessibility features and barriers.
+  - id: content.features
+    name: Content and features
+    description: Product content, capabilities, and feature quality.
+  - id: customization_modding
+    name: Customization and modding
+    description: Personalization, configuration, and modification support.
+  - id: monetization_value
+    name: Monetization and value
+    description: Pricing, purchases, value, and monetization fairness.
+  - id: multiplayer_community
+    name: Multiplayer and community
+    description: Multiplayer, social interaction, and community health.
+  - id: support_updates
+    name: Support and updates
+    description: Maintenance, communication, support, and update quality.
+  - id: use_case
+    name: Use case
+    description: The context or goal for which users use the product.
+  - id: feature_request
+    name: Feature request
+    description: A requested addition or change to the product.

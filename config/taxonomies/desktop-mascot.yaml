@@ -1,0 +1,26 @@
+version: "1"
+name: desktop-mascot
+extends:
+  - universal-core
+categories:
+  - id: mascot.behavior
+    name: Mascot behavior
+    description: Personality, reactions, routines, and interaction behavior.
+  - id: mascot.behavior.reactivity
+    parent_id: mascot.behavior
+    name: Reactivity
+    description: How promptly and appropriately the mascot responds.
+  - id: mascot.appearance
+    name: Mascot appearance
+    description: Visual presentation, animation, and personalization.
+  - id: mascot.appearance.customization
+    parent_id: mascot.appearance
+    name: Appearance customization
+    description: User control over skins, outfits, colors, and visual settings.
+  - id: desktop.integration
+    name: Desktop integration
+    description: Compatibility and interaction with desktop applications and windows.
+  - id: desktop.integration.resources
+    parent_id: desktop.integration
+    name: Resource usage
+    description: CPU, memory, battery, and startup impact on the desktop.

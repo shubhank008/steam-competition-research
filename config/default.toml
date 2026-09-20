@@ -1,0 +1,28 @@
+[project]
+name = "steam-research-project"
+data_dir = "data/steam-research-project"
+taxonomy_path = "config/taxonomies/universal-core.yaml"
+
+[steam.store]
+country = "US"
+language = "english"
+
+[steam.reviews]
+language = "all"
+purchase_type = "all"
+filter = "updated"
+page_size = 100
+max_reviews_per_app = 0
+max_positive_reviews = 0
+max_negative_reviews = 0
+incremental_overlap_seconds = 86400
+
+[models.stage1]
+provider = "opencode-go"
+model = "configured-model-id"
+temperature = 0
+
+[models.stage2]
+provider = "opencode-go"
+model = "configured-model-id"
+temperature = 0.2
