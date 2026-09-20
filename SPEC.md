@@ -840,4 +840,6 @@ A feature branch is complete only when:
 
 T002 uses typed frozen dataclasses and the Python standard library for configuration loading and validation. Pydantic remains the planned dependency for external-data and schema validation in later tasks; introducing it here would add dependency and contract surface before those boundaries exist. T003's domain contracts likewise remain framework-independent.
 
+T003 implements immutable domain dataclasses for app IDs, source SHA-256 hashes, runs, run units, timestamps, and explicit success/failure results. Run and unit transitions are closed over legal lifecycle edges and reject terminal-state mutation. External failures use adapter-neutral codes with retryability derived from code, keeping transport-specific exceptions outside the domain package.
+
 Configuration resolution is implemented as defaults, project TOML, `STEAM_RESEARCH_`/provider environment variables, then dotted CLI overrides. `ApplicationConfig.manifest()` omits provider secrets and non-reproducible loader metadata. The committed `config/default.toml`, universal taxonomy placeholder, and `.env.example` are safe templates only.
