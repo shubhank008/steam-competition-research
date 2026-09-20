@@ -252,7 +252,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 
 ## 7. Phase 4 — Stage 1 classification
 
-### [ ] T040: Implement provider contracts and OpenAI-compatible adapter
+### [~] T040: Implement provider contracts and OpenAI-compatible adapter
 
 - **Suggested branch:** `feat/llm-provider-adapter`
 - **Depends on:** T001, T003
@@ -264,8 +264,10 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Contract tests cover valid, invalid, rate-limited, and truncated responses.
   - A local deterministic fake implements the same contract for pipeline tests.
 - **Suggested commits:** contracts/fake; compatible transport; capabilities/errors/docs.
+- **Implementation notes:** `OpenCodeGoProvider` uses `https://opencode.ai/zen/v1/chat/completions`, reports capabilities explicitly, falls back from native JSON Schema to JSON mode only when advertised, bounds retries, and redacts provider response bodies and secrets from errors. Stage 1 currently provides schema `stage1-v1`, prompt `stage1-prompt-v1`, taxonomy/evidence/ID validation, and no batching or provider calls.
 
-### [ ] T041: Define Stage 1 schema and prompt package
+
+### [~] T041: Define Stage 1 schema and prompt package
 
 - **Suggested branch:** `feat/stage1-schema-prompt`
 - **Depends on:** T031, T040

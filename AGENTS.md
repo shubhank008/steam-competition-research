@@ -101,6 +101,14 @@ tests/test_project_cli.py Temporary-project CLI integration test
 
 The intended future implementation layout is defined in `SPEC.md`, Section 4. Do not create speculative modules before their owning PLAN task.
 
+## T040/T041 provider and Stage 1 contracts
+
+- Provider code lives under `src/steam_research/llm/` and must remain framework-independent at its contract boundary.
+- Capability reports, not provider names, select native JSON Schema versus JSON mode. OpenCode Go defaults to `https://opencode.ai/zen/v1`; tests use only boundary transport fakes.
+- Provider errors must classify retryability and omit API keys, full response bodies, review text, and prompts. Usage metadata is retained as structured data.
+- Stage 1 versions are explicit (`stage1-v1` schema and `stage1-prompt-v1` prompt). Validate exact input ID cardinality, taxonomy membership, enum/range values, evidence substrings, and `verified=false` for self-reported abandonment.
+- T040/T041 do not implement batching, classification scope, or real provider calls.
+
 ## How to execute a PLAN task
 
 1. Read the task, dependencies, linked PRD requirements, acceptance criteria, and relevant SPEC sections.

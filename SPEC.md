@@ -307,6 +307,8 @@ class Exporter(Protocol):
 
 Initial local exporters are Parquet and Markdown. Notion is out of scope.
 
+Implementation note: T040 uses a provider-independent `StructuredGenerationRequest`/`StructuredGenerationResponse` contract with explicit `ProviderCapabilities`. The OpenCode Go adapter targets `https://opencode.ai/zen/v1/chat/completions`, validates HTTPS/model/key/timeout/retry settings, records token usage, and maps authentication, request, rate-limit, timeout, connection, server, and malformed-response failures without exposing secrets or response bodies. Native JSON Schema is selected only when advertised; otherwise the adapter sends JSON mode. T041 versions the Stage 1 JSON Schema as `stage1-v1` and its prompt as `stage1-prompt-v1`; its validator enforces one-to-one input IDs, taxonomy IDs, enum/range constraints, unverified abandonment, and source-text evidence substrings. No batching, classification scope, or real provider calls are included in these tasks.
+
 ## 9. Store metadata contract
 
 Each `StorePageSnapshot` contains:
