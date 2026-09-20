@@ -103,7 +103,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Foreign keys and WAL settings are verified in integration tests.
 - **Suggested commits:** engine/transactions; migrations; integration fixtures/docs.
 
-### [ ] T011: Implement project and competitor management
+### [~] T011: Implement project and competitor management
 
 - **Suggested branch:** `feat/project-management`
 - **Depends on:** T002, T010
