@@ -91,7 +91,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 
 ## 4. Phase 1 — Projects and canonical storage
 
-### [ ] T010: Add SQLite engine and migration framework
+### [~] T010: Add SQLite engine and migration framework
 
 - **Suggested branch:** `feat/sqlite-foundation`
 - **Depends on:** T001, T003
