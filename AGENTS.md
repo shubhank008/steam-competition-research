@@ -85,7 +85,8 @@ SPEC.md                   Technical architecture and contracts
 PLAN.md                   Agent-ready implementation sequence
 pyproject.toml            Package metadata and tool configuration
 uv.lock                   Locked runtime and development dependencies
-src/steam_research/       Importable package and minimal CLI
+src/steam_research/       Importable package, config, and domain contracts
+config/                   Default TOML and taxonomy examples
 tests/test_cli.py         Installed CLI smoke test
 ```
 

@@ -835,3 +835,9 @@ A feature branch is complete only when:
 
 - Steam user review endpoint: https://partner.steamgames.com/doc/store/getreviews
 - Steam language codes: https://partner.steamgames.com/doc/store/localization/languages
+
+## 25. Implemented foundation deviations
+
+T002 uses typed frozen dataclasses and the Python standard library for configuration loading and validation. Pydantic remains the planned dependency for external-data and schema validation in later tasks; introducing it here would add dependency and contract surface before those boundaries exist. T003's domain contracts likewise remain framework-independent.
+
+Configuration resolution is implemented as defaults, project TOML, `STEAM_RESEARCH_`/provider environment variables, then dotted CLI overrides. `ApplicationConfig.manifest()` omits provider secrets and non-reproducible loader metadata. The committed `config/default.toml`, universal taxonomy placeholder, and `.env.example` are safe templates only.

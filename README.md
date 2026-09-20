@@ -2,7 +2,7 @@
 
 Steam Competition Research is a planned CLI pipeline for turning Steam store metadata and large review corpora into a concise, evidence-backed competitive strategy brief. It is designed for product owners and developers who need to understand competitors, find market gaps, prioritize features, avoid technical failures, and improve Steam positioning.
 
-The repository is at the **Python package foundation** stage. T001 provides an importable package, a minimal CLI, locked dependencies, and the local feedback loop. See [PLAN.md](PLAN.md) for the implementation sequence.
+The repository is at the **configuration and domain foundation** stage. T001 provides the package feedback loop; T002 adds typed configuration and sanitized manifests; T003 adds domain contracts. See [PLAN.md](PLAN.md) for the implementation sequence.
 
 ## What the system will do
 
@@ -66,7 +66,8 @@ Stage 2 structured synthesis --> Markdown strategy brief
 Planned major components:
 
 - Python CLI
-- typed project configuration and sanitized run manifests
+- typed project configuration, explicit precedence, and sanitized run manifests
+- framework-independent domain IDs, statuses, transitions, results, timestamps, hashes, and error taxonomy
 - `curl_cffi` Steam adapters
 - Patchright store-page fallback
 - SQLite migrations and repositories
@@ -155,7 +156,7 @@ These commands do not exist yet. T001 creates the package and initial CLI entry 
 - CLI flags provide one-run overrides.
 - Each stage saves its resolved non-secret configuration for reproducibility.
 
-Expected provider variables will include an API key and base URL for the selected OpenAI-compatible service. An `.env.example` will be added with the typed configuration implementation; real `.env` files are already ignored.
+Expected provider variables include an API key and base URL for the selected OpenAI-compatible service. Copy `.env.example` for local scalar overrides. Secrets are read at runtime and excluded from manifests; project TOML, environment values, and CLI overrides follow the documented precedence.
 
 ## Development status
 
@@ -164,7 +165,9 @@ Expected provider variables will include an API key and base URL for the selecte
 | Product requirements | Complete initial version |
 | Technical specification | Complete initial version |
 | Agentic implementation plan | Complete initial version |
-| Python package and CLI | T001 in progress ([~]) |
+| Python package and CLI | T001 complete |
+| Typed configuration and manifests | T002 in progress ([~]) |
+| Domain contracts and errors | T003 in progress ([~]) |
 | SQLite storage | Not started |
 | Steam collection | Not started |
 | Stage 1 classification | Not started |

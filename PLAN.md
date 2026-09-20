@@ -64,7 +64,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - README and AGENTS commands are replaced with verified commands rather than provisional text.
 - **Suggested commits:** package skeleton; tool configuration; CLI smoke test and docs.
 
-### [ ] T002: Implement typed configuration and run manifests
+### [~] T002: Implement typed configuration and run manifests
 
 - **Suggested branch:** `feat/project-configuration`
 - **Depends on:** T001
@@ -77,7 +77,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Invalid country, page size, negative limits, and missing taxonomy paths fail clearly.
 - **Suggested commits:** config models; precedence and redaction; examples/docs.
 
-### [ ] T003: Establish domain models and error taxonomy
+### [~] T003: Establish domain models and error taxonomy
 
 - **Suggested branch:** `feat/domain-contracts`
 - **Depends on:** T001
