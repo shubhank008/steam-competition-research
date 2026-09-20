@@ -172,7 +172,10 @@ def _coerce(key: str, value: str) -> Any:
 
 
 def _build(
-    data: Mapping[str, Any], *, project_config_path: Path | None = None
+    data: Mapping[str, Any],
+    *,
+    project_config_path: Path | None = None,
+    validate: bool = True,
 ) -> ApplicationConfig:
     project = data.get("project", {})
     steam = data.get("steam", {})
@@ -203,5 +206,6 @@ def _build(
         stage2=ModelConfig(**stage2),
         project_config_path=project_config_path,
     )
-    config.validate()
+    if validate:
+        config.validate()
     return config

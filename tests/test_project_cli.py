@@ -41,3 +41,14 @@ def test_init_add_duplicate_invalid_and_list(tmp_path: Path) -> None:
     listing = runner.invoke(app, ["app", "list", "--project", str(project)])
     assert listing.exit_code == 0, listing.output
     assert listing.output.count("123\thttps://store.steampowered.com/app/123/") == 1
+
+
+def test_pipeline_commands_are_exposed_and_status_json_is_machine_readable() -> None:
+    help_result = runner.invoke(app, ["--help"])
+    assert help_result.exit_code == 0
+    for command in ("crawl", "classify", "aggregate", "synthesize", "run", "export"):
+        assert command in help_result.output
+
+    status_result = runner.invoke(app, ["status", "--help"])
+    assert status_result.exit_code == 0
+    assert "--json" in status_result.output

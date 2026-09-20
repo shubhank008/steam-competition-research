@@ -6,6 +6,17 @@ from typing import Annotated
 import typer
 
 from steam_research import __version__
+from steam_research.pipeline import (
+    ProjectContext,
+    aggregate_stage,
+    classify_stage,
+    crawl_reviews_stage,
+    crawl_store,
+    export_data,
+    export_report,
+    open_project,
+    synthesize_stage,
+)
 from steam_research.projects import (
     ProjectError,
     add_competitor,
@@ -21,7 +32,15 @@ app = typer.Typer(
     help="Collect and analyze Steam competitor research.",
 )
 app_commands = typer.Typer(add_completion=False, help="Manage project competitors.")
+crawl_commands = typer.Typer(
+    add_completion=False, help="Collect Steam metadata and reviews."
+)
+export_commands = typer.Typer(
+    add_completion=False, help="Export derived research outputs."
+)
 app.add_typer(app_commands, name="app")
+app.add_typer(crawl_commands, name="crawl")
+app.add_typer(export_commands, name="export")
 
 
 @app.callback()
@@ -112,6 +131,172 @@ def status(
                     )
     except (ProjectError, FileNotFoundError) as error:
         raise typer.BadParameter(str(error)) from error
+
+
+def _context(project: Path) -> ProjectContext:
+    try:
+        return open_project(project)
+    except Exception as error:
+        raise typer.BadParameter(str(error)) from error
+
+
+def _selected_appids(appid: int | None, all_apps: bool) -> tuple[int, ...] | None:
+    if appid is not None and all_apps:
+        raise typer.BadParameter("use either --app or --all")
+    return (appid,) if appid is not None else None
+
+
+@crawl_commands.command("store")
+def crawl_store_command(
+    project: Annotated[
+        Path, typer.Option("--project", help="Project directory.")
+    ] = Path("."),
+    appid: Annotated[int | None, typer.Option("--app", help="Steam app ID.")] = None,
+    all_apps: Annotated[
+        bool, typer.Option("--all", help="Process every competitor.")
+    ] = False,
+) -> None:
+    """Fetch and persist localized store metadata."""
+    context = _context(project)
+    try:
+        run_id = crawl_store(context, _selected_appids(appid, all_apps))
+    except Exception as error:
+        typer.echo(f"store crawl failed: {str(error)[:500]}", err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo(f"store_crawl\tcompleted\t{run_id}")
+
+
+@crawl_commands.command("reviews")
+def crawl_reviews_command(
+    project: Annotated[
+        Path, typer.Option("--project", help="Project directory.")
+    ] = Path("."),
+    appid: Annotated[int | None, typer.Option("--app", help="Steam app ID.")] = None,
+    all_apps: Annotated[
+        bool, typer.Option("--all", help="Process every competitor.")
+    ] = False,
+) -> None:
+    """Crawl resumable positive and negative review streams."""
+    context = _context(project)
+    try:
+        run_id = crawl_reviews_stage(context, _selected_appids(appid, all_apps))
+    except Exception as error:
+        typer.echo(f"review crawl failed: {str(error)[:500]}", err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo(f"review_crawl\tcompleted\t{run_id}")
+
+
+@app.command()
+def classify(
+    project: Annotated[
+        Path, typer.Option("--project", help="Project directory.")
+    ] = Path("."),
+    scope: Annotated[
+        str, typer.Option("--scope", help="Classification scope.")
+    ] = "unclassified-only",
+    seed: Annotated[int, typer.Option("--seed", help="Stable sampling seed.")] = 0,
+) -> None:
+    """Classify eligible reviews with the configured Stage 1 provider."""
+    context = _context(project)
+    try:
+        run_id = classify_stage(context, scope=scope, seed=seed)  # type: ignore[arg-type]
+    except Exception as error:
+        typer.echo(f"classification failed: {str(error)[:500]}", err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo(f"classification\tcompleted\t{run_id}")
+
+
+@app.command("aggregate")
+def aggregate_command(
+    project: Annotated[
+        Path, typer.Option("--project", help="Project directory.")
+    ] = Path("."),
+) -> None:
+    """Compute deterministic metrics from current classified reviews."""
+    context = _context(project)
+    try:
+        run_id = aggregate_stage(context)
+    except Exception as error:
+        typer.echo(f"aggregation failed: {str(error)[:500]}", err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo(f"aggregation\tcompleted\t{run_id}")
+
+
+@app.command("synthesize")
+def synthesize_command(
+    project: Annotated[
+        Path, typer.Option("--project", help="Project directory.")
+    ] = Path("."),
+) -> None:
+    """Generate bounded structured strategy output."""
+    context = _context(project)
+    try:
+        run_id = synthesize_stage(context)
+    except Exception as error:
+        typer.echo(f"synthesis failed: {str(error)[:500]}", err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo(f"synthesis\tcompleted\t{run_id}")
+
+
+@app.command()
+def run(
+    project: Annotated[
+        Path, typer.Option("--project", help="Project directory.")
+    ] = Path("."),
+    scope: Annotated[
+        str, typer.Option("--scope", help="Classification scope.")
+    ] = "unclassified-only",
+) -> None:
+    """Run collection, classification, aggregation, and synthesis in order."""
+    context = _context(project)
+    try:
+        crawl_store(context)
+        crawl_reviews_stage(context)
+        classify_stage(context, scope=scope)  # type: ignore[arg-type]
+        aggregate_stage(context)
+        run_id = synthesize_stage(context)
+    except Exception as error:
+        typer.echo(f"pipeline failed: {str(error)[:500]}", err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo(f"run\tcompleted\t{run_id}")
+
+
+@export_commands.command("parquet")
+def export_parquet_command(
+    project: Annotated[
+        Path, typer.Option("--project", help="Project directory.")
+    ] = Path("."),
+    output: Annotated[Path, typer.Option("--output", help="Output directory.")] = Path(
+        "exports"
+    ),
+) -> None:
+    """Export bounded analytical datasets to Parquet."""
+    context = _context(project)
+    try:
+        result = export_data(context, output)
+    except Exception as error:
+        typer.echo(f"Parquet export failed: {str(error)[:500]}", err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo(f"export\tcompleted\t{result.manifest_path}")
+
+
+@export_commands.command("report")
+def export_report_command(
+    project: Annotated[
+        Path, typer.Option("--project", help="Project directory.")
+    ] = Path("."),
+    output: Annotated[
+        Path, typer.Option("--output", help="Markdown output path.")
+    ] = Path("strategy-brief.md"),
+) -> None:
+    """Render the latest validated synthesis as Markdown."""
+    context = _context(project)
+    try:
+        path = export_report(context, output)
+    except Exception as error:
+        typer.echo(f"report export failed: {str(error)[:500]}", err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo(f"report\tcompleted\t{path}")
 
 
 if __name__ == "__main__":

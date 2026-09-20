@@ -43,6 +43,7 @@ def load_config(
     *,
     environ: Mapping[str, str] | None = None,
     cli_overrides: Mapping[str, Any] | None = None,
+    validate: bool = True,
 ) -> ApplicationConfig:
     """Resolve defaults, TOML, environment, then CLI overrides."""
     data: dict[str, Any] = {}
@@ -59,4 +60,4 @@ def load_config(
         model = data.get("models", {}).get(name, {})
         if "api_key" in model and not isinstance(model["api_key"], Secret):
             model["api_key"] = Secret(str(model["api_key"]))
-    return _build(data, project_config_path=project_path)
+    return _build(data, project_config_path=project_path, validate=validate)
