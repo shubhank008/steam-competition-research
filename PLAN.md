@@ -352,7 +352,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Confirming and contradictory evidence can coexist.
 - **Suggested commits:** duplicate/diversity policy; selector; privacy/traceability tests/docs.
 
-### [ ] T052: Implement Parquet analytical export
+### [~] T052: Implement Parquet analytical export
 
 - **Suggested branch:** `feat/parquet-export`
 - **Depends on:** T050
@@ -367,7 +367,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 
 ## 9. Phase 6 — Stage 2 and strategy brief
 
-### [ ] T060: Define Stage 2 evidence payload and output schema
+### [~] T060: Define Stage 2 evidence payload and output schema
 
 - **Suggested branch:** `feat/stage2-schema`
 - **Depends on:** T050, T051
