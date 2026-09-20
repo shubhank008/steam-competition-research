@@ -1,6 +1,15 @@
 """Canonical SQLite storage."""
 
 from steam_research.storage.database import Database
+from steam_research.storage.reviews import (
+    ReviewRecord,
+    UpsertCounts,
+    query_reviews,
+    record_api_page,
+    update_stream_state,
+    upsert_review,
+    upsert_reviews,
+)
 from steam_research.storage.runs import (
     RunStatusView,
     add_unit,
@@ -14,7 +23,14 @@ from steam_research.storage.runs import (
 
 __all__ = [
     "Database",
+    "ReviewRecord",
     "RunStatusView",
+    "UpsertCounts",
+    "query_reviews",
+    "record_api_page",
+    "update_stream_state",
+    "upsert_review",
+    "upsert_reviews",
     "add_unit",
     "create_run",
     "sanitized_manifest",

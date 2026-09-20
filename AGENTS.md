@@ -204,3 +204,10 @@ If implementation introduces one of these paths, update `.gitignore` in the same
 
 - Steam review API: https://partner.steamgames.com/doc/store/getreviews
 - Steam language codes: https://partner.steamgames.com/doc/store/localization/languages
+
+## T012/T013 implementation notes
+
+- Schema migrations now run transactionally through version 3. T012 adds `runs` and `run_units`; T013 adds `reviews`, `review_api_pages`, and `review_stream_state` plus required indexes and optional FTS5 detection.
+- Run transitions are validated through the domain state machine before persistence; status is available as human text or `status --json`.
+- Review upserts use `(project_id, appid, recommendationid)` as the canonical key, preserve caller-provided `raw_json` exactly, and classify source hashes as new/changed/unchanged. Positive and negative source polarity updates do not duplicate a review.
+- Generated 100,000-row local SQLite batch baseline: 8.351 seconds, approximately 11,975 rows/second in the current container; rerun with `uv run pytest tests/integration/test_reviews.py -k 100k -s`.

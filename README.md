@@ -2,7 +2,7 @@
 
 Steam Competition Research is a planned CLI pipeline for turning Steam store metadata and large review corpora into a concise, evidence-backed competitive strategy brief. It is designed for product owners and developers who need to understand competitors, find market gaps, prioritize features, avoid technical failures, and improve Steam positioning.
 
-The repository is at the **project and storage foundation** stage. T001 provides the package feedback loop; T002 adds typed configuration and sanitized manifests; T003 adds domain contracts; T010 adds SQLite migrations and project storage; T011 adds project initialization and competitor management. See [PLAN.md](PLAN.md) for the implementation sequence.
+The repository is at the **run-tracking and source-review storage** stage. T001 provides the package feedback loop; T002 adds typed configuration and sanitized manifests; T003 adds domain contracts; T010 adds SQLite migrations and project storage; T011 adds project initialization and competitor management. See [PLAN.md](PLAN.md) for the implementation sequence.
 
 ## What the system will do
 
@@ -79,7 +79,7 @@ Planned major components:
 
 ## Implemented foundation
 
-T001 currently provides only the package foundation and feedback loop; Steam collection and research commands remain future PLAN tasks.
+T001 provides the package foundation; T012 adds resumable run/unit persistence and status views, and T013 adds canonical review storage. Steam collection adapters remain future PLAN tasks.
 
 - Python 3.12 or newer
 - `uv` for the environment and locked dependencies
@@ -94,6 +94,7 @@ steam-research app add APPID_OR_STORE_URL --project PATH
 steam-research app list --project PATH
 steam-research --help
 steam-research --version
+steam-research status --project PATH [--json]
 ```
 
 Each project stores its canonical SQLite database at `PATH/project.sqlite3` and its starter configuration at `PATH/project.toml`. SQLite uses WAL mode and enforces foreign keys. Repeating a competitor addition is idempotent and reports `Already present`; invalid app input fails before inserting a row.
@@ -175,6 +176,8 @@ Expected provider variables include an API key and base URL for the selected Ope
 | Domain contracts and errors | T003 in progress ([~]) |
 | SQLite storage | T010 in progress ([~]) |
 | Project and competitor management | T011 in progress ([~]) |
+| Run tracking and status | T012 in progress ([~]) |
+| Source review storage and query API | T013 in progress ([~]) |
 | Steam collection | Not started |
 | Stage 1 classification | Not started |
 | Aggregation | Not started |

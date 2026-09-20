@@ -117,7 +117,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 - **Suggested commits:** repositories; app parsing; CLI/tests/docs.
 - **Implementation note:** T010 uses standard-library `sqlite3` and an ordered migration runner rather than SQLAlchemy/Alembic; the project root is the path-resolution boundary and stores `project.toml` plus `project.sqlite3`.
 
-### [ ] T012: Implement runs, units, and status reporting
+### [~] T012: Implement runs, units, and status reporting
 
 - **Suggested branch:** `feat/run-tracking`
 - **Depends on:** T002, T003, T010
@@ -129,7 +129,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Illegal state transitions fail transactionally.
 - **Suggested commits:** schema/repositories; status service; CLI/tests/docs.
 
-### [ ] T013: Implement source review storage and query API
+### [~] T013: Implement source review storage and query API
 
 - **Suggested branch:** `feat/review-storage`
 - **Depends on:** T010, T012

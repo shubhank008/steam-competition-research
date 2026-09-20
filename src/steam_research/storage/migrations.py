@@ -67,7 +67,88 @@ def _migration_2(connection: sqlite3.Connection) -> None:
     )
 
 
-MIGRATIONS: tuple[Migration, ...] = (_migration_1, _migration_2)
+def _migration_3(connection: sqlite3.Connection) -> None:
+    connection.executescript(
+        """
+        CREATE TABLE review_api_pages (
+            id TEXT PRIMARY KEY NOT NULL,
+            project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            appid INTEGER NOT NULL CHECK (appid > 0),
+            review_type TEXT NOT NULL CHECK (review_type IN ('positive', 'negative')),
+            request_json TEXT NOT NULL CHECK (json_valid(request_json)),
+            cursor_in TEXT,
+            cursor_out TEXT,
+            http_status INTEGER,
+            fetched_at TEXT NOT NULL,
+            review_count INTEGER NOT NULL DEFAULT 0 CHECK (review_count >= 0),
+            response_hash TEXT,
+            response_bytes BLOB
+        );
+        CREATE TABLE review_stream_state (
+            project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            appid INTEGER NOT NULL CHECK (appid > 0),
+            review_type TEXT NOT NULL CHECK (review_type IN ('positive', 'negative')),
+            cursor TEXT,
+            high_water_timestamp INTEGER,
+            status TEXT NOT NULL,
+            last_page_id TEXT REFERENCES review_api_pages(id),
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (project_id, appid, review_type)
+        );
+        CREATE TABLE reviews (
+            project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            appid INTEGER NOT NULL CHECK (appid > 0),
+            recommendationid TEXT NOT NULL,
+            language TEXT NOT NULL,
+            voted_up INTEGER NOT NULL CHECK (voted_up IN (0, 1)),
+            votes_up INTEGER NOT NULL DEFAULT 0,
+            votes_funny INTEGER NOT NULL DEFAULT 0,
+            weighted_vote_score REAL,
+            comment_count INTEGER NOT NULL DEFAULT 0,
+            steam_purchase INTEGER NOT NULL CHECK (steam_purchase IN (0, 1)),
+            received_for_free INTEGER NOT NULL CHECK (received_for_free IN (0, 1)),
+            refunded INTEGER NOT NULL CHECK (refunded IN (0, 1)),
+            written_during_early_access INTEGER NOT NULL
+                CHECK (written_during_early_access IN (0, 1)),
+            primarily_steam_deck INTEGER CHECK (primarily_steam_deck IN (0, 1)),
+            playtime_at_review INTEGER,
+            playtime_forever INTEGER,
+            playtime_last_two_weeks INTEGER,
+            last_played INTEGER,
+            timestamp_created INTEGER NOT NULL,
+            timestamp_updated INTEGER NOT NULL,
+            review_text TEXT NOT NULL,
+            source_review_type TEXT NOT NULL
+                CHECK (source_review_type IN ('positive', 'negative')),
+            source_hash TEXT NOT NULL,
+            raw_json TEXT NOT NULL CHECK (json_valid(raw_json)),
+            first_seen_at TEXT NOT NULL,
+            last_seen_at TEXT NOT NULL,
+            last_source_run_id TEXT NOT NULL REFERENCES runs(id),
+            PRIMARY KEY (project_id, appid, recommendationid)
+        );
+        CREATE INDEX reviews_app_language_idx ON reviews(project_id, appid, language);
+        CREATE INDEX reviews_app_polarity_updated_idx
+            ON reviews(project_id, appid, voted_up, timestamp_updated DESC);
+        CREATE INDEX reviews_app_playtime_idx
+            ON reviews(project_id, appid, playtime_at_review);
+        CREATE INDEX reviews_app_created_idx
+            ON reviews(project_id, appid, timestamp_created);
+        CREATE INDEX reviews_app_hash_idx ON reviews(project_id, appid, source_hash);
+        CREATE INDEX review_pages_app_fetched_idx
+            ON review_api_pages(project_id, appid, fetched_at);
+        """
+    )
+    try:
+        connection.execute(
+            "CREATE VIRTUAL TABLE review_text_fts USING fts5(project_id UNINDEXED, "
+            "appid UNINDEXED, recommendationid UNINDEXED, review_text)"
+        )
+    except sqlite3.OperationalError:
+        pass
+
+
+MIGRATIONS: tuple[Migration, ...] = (_migration_1, _migration_2, _migration_3)
 
 
 def migrate(connection: sqlite3.Connection) -> None:

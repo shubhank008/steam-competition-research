@@ -222,7 +222,7 @@ A project's `(project_id, appid)` pair is unique.
 
 The project database is created at `<project-root>/project.sqlite3` and configured on every connection with `PRAGMA foreign_keys = ON`, `PRAGMA journal_mode = WAL`, and a bounded busy timeout. `schema_migrations` records applied integer versions; migrations are ordered, transactional, and safe to reapply.
 
-The first migration creates `projects` and `competitors`. A competitor is unique by `(project_id, appid)`, stores a canonical HTTPS Steam URL, and retains UTC ISO-8601 timestamps. Project and competitor services use parameterized SQL and keep path resolution outside the database layer. The current CLI surface is `init PATH`, `app add APPID_OR_STORE_URL --project PATH`, and `app list --project PATH`.
+The first migration creates `projects` and `competitors`. A competitor is unique by `(project_id, appid)`, stores a canonical HTTPS Steam URL, and retains UTC ISO-8601 timestamps. Project and competitor services use parameterized SQL and keep path resolution outside the database layer. The current CLI surface is `init PATH`, `app add APPID_OR_STORE_URL --project PATH`, `app list --project PATH`, and `status --project PATH [--json]`. T012 persists sanitized manifests, independent child units, and transactional domain-validated transitions. T013 adds review source lineage and canonical review facts.
 
 ### 7.4 Run
 
