@@ -18,6 +18,11 @@ from steam_research.steam.crawler import (
     StreamResult,
     crawl_reviews,
 )
+from steam_research.steam.fallback import (
+    FallbackStorePageFetcher,
+    PatchrightStorePageFetcher,
+    should_fallback,
+)
 from steam_research.steam.reviews import CurlCffiTransport, HttpResponse, SteamReviewApi
 from steam_research.steam.store import (
     CurlCffiStorePageFetcher,
@@ -26,11 +31,6 @@ from steam_research.steam.store import (
     StorePageFetcher,
     StorePageParser,
     StorePageSnapshot,
-)
-from steam_research.steam.fallback import (
-    FallbackStorePageFetcher,
-    PatchrightStorePageFetcher,
-    should_fallback,
 )
 
 __all__ = [
