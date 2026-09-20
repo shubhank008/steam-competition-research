@@ -126,3 +126,13 @@ def test_capability_without_any_structured_mode_fails() -> None:
     )
     with pytest.raises(ProviderContractError, match="structured JSON"):
         configured.generate_structured(request())
+
+
+def test_configuration_rejects_url_userinfo_and_query() -> None:
+    for base_url in (
+        "https://user:password@example.test/v1",
+        "https://example.test/v1?api_key=leak",
+        "https://example.test/v1#fragment",
+    ):
+        with pytest.raises(ProviderContractError):
+            provider(FakeTransport([]), base_url=base_url)

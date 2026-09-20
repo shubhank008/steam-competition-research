@@ -7,6 +7,7 @@ import time
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
 from typing import Any
+from urllib.parse import urlsplit
 
 from steam_research.config.models import Secret
 from steam_research.llm.contracts import (
@@ -40,9 +41,19 @@ class OpenCodeGoConfig:
     def validate(self) -> None:
         if not self.model.strip() or not self.api_key.value.strip():
             raise ProviderContractError("OpenCode Go model and API key are required")
-        if not self.base_url.startswith("https://") or self.base_url.endswith("/"):
+        parsed = urlsplit(self.base_url)
+        if (
+            parsed.scheme != "https"
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.query
+            or parsed.fragment
+            or self.base_url.endswith("/")
+        ):
             raise ProviderContractError(
-                "provider base URL must be an HTTPS URL without a trailing slash"
+                "provider base URL must be HTTPS without credentials, query, "
+                "fragment, or trailing slash"
             )
         if (
             self.timeout_seconds <= 0
