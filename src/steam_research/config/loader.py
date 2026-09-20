@@ -26,6 +26,7 @@ ENV_KEYS = {
     "STEAM_RESEARCH_MAX_REVIEWS_PER_APP": "steam.reviews.max_reviews_per_app",
     "STEAM_RESEARCH_MAX_POSITIVE_REVIEWS": "steam.reviews.max_positive_reviews",
     "STEAM_RESEARCH_MAX_NEGATIVE_REVIEWS": "steam.reviews.max_negative_reviews",
+    "STEAM_RESEARCH_MAX_RETRIES": "steam.reviews.max_retries",
     "STEAM_RESEARCH_STAGE1_MODEL": "models.stage1.model",
     "STEAM_RESEARCH_STAGE2_MODEL": "models.stage2.model",
     "OPENAI_API_KEY": "models.stage1.api_key",

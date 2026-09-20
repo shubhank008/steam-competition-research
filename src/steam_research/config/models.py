@@ -35,6 +35,8 @@ class ReviewConfig:
     max_positive_reviews: int = 0
     max_negative_reviews: int = 0
     incremental_overlap_seconds: int = 86400
+    max_retries: int = 3
+    retry_backoff_seconds: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -78,6 +80,7 @@ class ApplicationConfig:
             "max_positive_reviews",
             "max_negative_reviews",
             "incremental_overlap_seconds",
+            "max_retries",
         ):
             if getattr(reviews, name) < 0:
                 raise ConfigurationError(f"steam.reviews.{name} must not be negative")
@@ -113,6 +116,7 @@ def _coerce(key: str, value: str) -> Any:
             "max_positive_reviews",
             "max_negative_reviews",
             "incremental_overlap_seconds",
+            "max_retries",
         )
     ):
         return int(value)

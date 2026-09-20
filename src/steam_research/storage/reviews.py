@@ -224,6 +224,7 @@ def update_stream_state(database: Database, values: dict[str, Any]) -> None:
         "cursor",
         "high_water_timestamp",
         "status",
+        "stop_reason",
         "last_page_id",
         "updated_at",
     )
@@ -237,7 +238,68 @@ def update_stream_state(database: Database, values: dict[str, Any]) -> None:
             + ") ON CONFLICT(project_id, appid, review_type) "
             "DO UPDATE SET cursor=excluded.cursor, "
             "high_water_timestamp=excluded.high_water_timestamp, "
-            "status=excluded.status, last_page_id=excluded.last_page_id, "
-            "updated_at=excluded.updated_at",
+            "status=excluded.status, stop_reason=excluded.stop_reason, "
+            "last_page_id=excluded.last_page_id, updated_at=excluded.updated_at",
             tuple(values.get(c) for c in columns),
         )
+
+
+def persist_page_checkpoint(
+    database: Database,
+    *,
+    page_values: dict[str, Any],
+    reviews: list[ReviewRecord],
+    stream_values: dict[str, Any],
+) -> UpsertCounts:
+    """Commit page lineage, reviews, and the next cursor atomically."""
+    counts = UpsertCounts()
+    columns = (
+        "id",
+        "project_id",
+        "appid",
+        "review_type",
+        "request_json",
+        "cursor_in",
+        "cursor_out",
+        "http_status",
+        "fetched_at",
+        "review_count",
+        "response_hash",
+        "response_bytes",
+    )
+    with database.transaction() as connection:
+        connection.execute(
+            "INSERT INTO review_api_pages ("
+            + ", ".join(columns)
+            + ") VALUES ("
+            + ", ".join("?" for _ in columns)
+            + ")",
+            tuple(page_values.get(column) for column in columns),
+        )
+        for review in reviews:
+            counts = counts.add(_upsert_review(connection, review))
+        state_columns = (
+            "project_id",
+            "appid",
+            "review_type",
+            "cursor",
+            "high_water_timestamp",
+            "status",
+            "stop_reason",
+            "last_page_id",
+            "updated_at",
+        )
+        state = {**stream_values, "updated_at": stream_values.get("updated_at", _now())}
+        connection.execute(
+            "INSERT INTO review_stream_state ("
+            + ", ".join(state_columns)
+            + ") VALUES ("
+            + ", ".join("?" for _ in state_columns)
+            + ") ON CONFLICT(project_id, appid, review_type) DO UPDATE SET "
+            "cursor=excluded.cursor, "
+            "high_water_timestamp=excluded.high_water_timestamp, "
+            "status=excluded.status, stop_reason=excluded.stop_reason, "
+            "last_page_id=excluded.last_page_id, updated_at=excluded.updated_at",
+            tuple(state.get(column) for column in state_columns),
+        )
+    return counts

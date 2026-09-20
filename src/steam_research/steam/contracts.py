@@ -95,6 +95,8 @@ class Review:
     received_for_free: bool
     refunded: bool
     written_during_early_access: bool
+    raw_json: str = "{}"
+    source_hash: str = ""
 
 
 @dataclass(frozen=True)
@@ -173,6 +175,7 @@ def validate_review_payload(payload: Any, request: ReviewPageRequest) -> ReviewP
                 "Steam review item failed schema validation",
             )
         try:
+            raw_json = json.dumps(item, sort_keys=True, separators=(",", ":"))
             normalized.append(
                 Review(
                     str(item["recommendationid"]),
@@ -187,6 +190,8 @@ def validate_review_payload(payload: Any, request: ReviewPageRequest) -> ReviewP
                     bool(item.get("received_for_free", False)),
                     bool(item.get("refunded", False)),
                     bool(item.get("written_during_early_access", False)),
+                    raw_json,
+                    source_hash(raw_json),
                 )
             )
         except (TypeError, ValueError):

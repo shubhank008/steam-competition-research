@@ -91,6 +91,7 @@ def _migration_3(connection: sqlite3.Connection) -> None:
             cursor TEXT,
             high_water_timestamp INTEGER,
             status TEXT NOT NULL,
+            stop_reason TEXT,
             last_page_id TEXT REFERENCES review_api_pages(id),
             updated_at TEXT NOT NULL,
             PRIMARY KEY (project_id, appid, review_type)

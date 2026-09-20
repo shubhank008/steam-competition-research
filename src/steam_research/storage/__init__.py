@@ -4,6 +4,7 @@ from steam_research.storage.database import Database
 from steam_research.storage.reviews import (
     ReviewRecord,
     UpsertCounts,
+    persist_page_checkpoint,
     query_reviews,
     record_api_page,
     update_stream_state,
@@ -27,6 +28,7 @@ __all__ = [
     "RunStatusView",
     "UpsertCounts",
     "query_reviews",
+    "persist_page_checkpoint",
     "record_api_page",
     "update_stream_state",
     "upsert_review",

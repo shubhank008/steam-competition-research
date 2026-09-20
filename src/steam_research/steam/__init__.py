@@ -11,9 +11,19 @@ from steam_research.steam.contracts import (
     source_hash,
     validate_review_payload,
 )
+from steam_research.steam.crawler import (
+    CrawlCancelled,
+    CrawlLimits,
+    CrawlResult,
+    StreamResult,
+    crawl_reviews,
+)
 from steam_research.steam.reviews import CurlCffiTransport, HttpResponse, SteamReviewApi
 
 __all__ = [
+    "CrawlCancelled",
+    "CrawlLimits",
+    "CrawlResult",
     "CurlCffiTransport",
     "HttpResponse",
     "OffTopicPolicy",
@@ -23,6 +33,8 @@ __all__ = [
     "ReviewPageRequest",
     "StorePageRequest",
     "StorePageResponse",
+    "StreamResult",
+    "crawl_reviews",
     "classify_http_error",
     "source_hash",
     "validate_review_payload",
