@@ -86,7 +86,9 @@ def _normalized_document(
     }
 
 
-def load_taxonomy(path: Path) -> Taxonomy:
+def load_taxonomy(
+    path: Path, *, external_parent_ids: frozenset[str] = frozenset()
+) -> Taxonomy:
     """Load and validate one taxonomy document."""
     raw = _read(path)
     for field in ("name", "version", "categories"):
@@ -109,7 +111,7 @@ def load_taxonomy(path: Path) -> Taxonomy:
     ids = [category["id"] for category in categories]
     if len(ids) != len(set(ids)):
         raise TaxonomyError("taxonomy contains duplicate category IDs")
-    category_ids = set(ids)
+    category_ids = set(ids) | set(external_parent_ids)
     for category in categories:
         parent = category.get("parent_id")
         if parent is not None and parent not in category_ids:
@@ -153,6 +155,7 @@ def merge_taxonomies(core: Taxonomy, extension: Taxonomy) -> Taxonomy:
             raise TaxonomyError(f"incompatible duplicate category ID: {category['id']}")
         by_id[category["id"]] = category
     categories = tuple(sorted(by_id.values(), key=lambda category: category["id"]))
+    _validate_acyclic(categories)
     merged = _normalized_document(
         extension.name, extension.version, extension.extends, categories
     )
@@ -171,4 +174,5 @@ def load_merged_taxonomy(core_path: Path, project_path: Path | None = None) -> T
     core = load_taxonomy(core_path)
     if project_path is None or project_path.resolve() == core_path.resolve():
         return core
-    return merge_taxonomies(core, load_taxonomy(project_path))
+    extension = load_taxonomy(project_path, external_parent_ids=core.ids)
+    return merge_taxonomies(core, extension)
