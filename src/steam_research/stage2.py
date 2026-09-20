@@ -229,6 +229,38 @@ class Recommendation:
                 "recommendations must not make geography claims"
             )
 
+    @classmethod
+    def from_mapping(cls, data: Mapping[str, Any]) -> Recommendation:
+        required = (
+            "rank",
+            "title",
+            "action",
+            "impact",
+            "effort",
+            "validation_step",
+            "confidence",
+        )
+        if any(key not in data for key in required):
+            raise Stage2ValidationError("recommendation is missing a required field")
+        return cls(
+            rank=int(data["rank"]),
+            title=str(data["title"]),
+            action=str(data["action"]),
+            impact=str(data["impact"]),
+            effort=str(data["effort"]),
+            evidence_metric_ids=tuple(
+                str(item) for item in data.get("evidence_metric_ids", [])
+            ),
+            evidence_review_ids=tuple(
+                str(item) for item in data.get("evidence_review_ids", [])
+            ),
+            validation_step=str(data["validation_step"]),
+            confidence=str(data["confidence"]),
+            counterevidence=tuple(
+                str(item) for item in data.get("counterevidence", [])
+            ),
+        )
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "rank": self.rank,
@@ -253,6 +285,38 @@ class Stage2Output:
     coverage_and_caveats: tuple[str, ...]
     competitor_grid: tuple[Mapping[str, Any], ...] = ()
     schema_version: str = STAGE2_SCHEMA_VERSION
+
+    @classmethod
+    def from_mapping(cls, data: Mapping[str, Any]) -> Stage2Output:
+        required = (
+            "schema_version",
+            "status",
+            "executive_direction",
+            "recommendations",
+            "risks_and_counterevidence",
+            "coverage_and_caveats",
+        )
+        if any(key not in data for key in required):
+            raise Stage2ValidationError("Stage 2 output is missing a required field")
+        return cls(
+            status=str(data["status"]),
+            executive_direction=tuple(
+                str(item) for item in data["executive_direction"]
+            ),
+            recommendations=tuple(
+                Recommendation.from_mapping(item) for item in data["recommendations"]
+            ),
+            risks_and_counterevidence=tuple(
+                str(item) for item in data["risks_and_counterevidence"]
+            ),
+            coverage_and_caveats=tuple(
+                str(item) for item in data["coverage_and_caveats"]
+            ),
+            competitor_grid=tuple(
+                dict(item) for item in data.get("competitor_grid", [])
+            ),
+            schema_version=str(data["schema_version"]),
+        )
 
     def validate(self, payload: Stage2EvidencePayload) -> None:
         if (

@@ -289,6 +289,40 @@ def _migration_6(connection: sqlite3.Connection) -> None:
     )
 
 
+def _migration_8(connection: sqlite3.Connection) -> None:
+    connection.executescript(
+        """
+        CREATE TABLE synthesis_runs (
+            id TEXT PRIMARY KEY NOT NULL,
+            project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            aggregate_run_id TEXT NOT NULL REFERENCES aggregate_runs(id),
+            prompt_version TEXT NOT NULL,
+            prompt_hash TEXT NOT NULL,
+            schema_version TEXT NOT NULL,
+            model_policy TEXT NOT NULL,
+            payload_json TEXT NOT NULL CHECK (json_valid(payload_json)),
+            status TEXT NOT NULL CHECK (status IN (
+                'running', 'completed', 'partial', 'failed'
+            )),
+            request_ceiling INTEGER NOT NULL CHECK (request_ceiling >= 0),
+            token_ceiling INTEGER NOT NULL CHECK (token_ceiling >= 0),
+            cost_ceiling_usd REAL NOT NULL CHECK (cost_ceiling_usd >= 0),
+            requests_used INTEGER NOT NULL DEFAULT 0 CHECK (requests_used >= 0),
+            tokens_used INTEGER NOT NULL DEFAULT 0 CHECK (tokens_used >= 0),
+            cost_used_usd REAL NOT NULL DEFAULT 0 CHECK (cost_used_usd >= 0),
+            attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+            model TEXT,
+            output_json TEXT CHECK (output_json IS NULL OR json_valid(output_json)),
+            created_at TEXT NOT NULL,
+            completed_at TEXT,
+            error_summary TEXT
+        );
+        CREATE INDEX synthesis_runs_project_idx
+            ON synthesis_runs(project_id, created_at);
+        """
+    )
+
+
 def _migration_7(connection: sqlite3.Connection) -> None:
     connection.executescript(
         """
@@ -348,6 +382,7 @@ MIGRATIONS: tuple[Migration, ...] = (
     _migration_5,
     _migration_6,
     _migration_7,
+    _migration_8,
 )
 
 
