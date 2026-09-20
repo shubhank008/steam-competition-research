@@ -127,6 +127,15 @@ Preserve these unless the PRD and SPEC are intentionally changed in the same bra
 - Positive and negative review crawlers have independent cursors; pagination inside one stream is sequential.
 - Incremental crawling uses overlap/high-water safeguards and never stops at the first known review.
 - Stage 1 performs multi-label evidence extraction.
+
+## Review crawler behavior (T022/T023)
+
+- `crawl_reviews` schedules positive then negative page fetches in deterministic round-robin order; each stream has its own durable cursor and pages within a stream are sequential.
+- Every successful page commits API metadata, review upserts, and the next cursor in one SQLite transaction. A crash before commit repeats that page; a crash after commit resumes from the committed cursor without duplicate logical reviews.
+- Stream stop reasons are explicit: `empty_page`, `repeated_cursor`, `non_progressing_cursor`, `configured_limit`, `fully_known_overlap`, `retry_exhausted:<error>`, and `cancelled`. Retryable adapter errors use bounded exponential backoff and optional server hints.
+- `0` means no user-imposed limit. Per-stream limits are checked after committed pages, so concurrency cannot make limits nondeterministic.
+- Incremental runs restart at `*`, use the prior successful high-water timestamp for overlap comparison, upsert known IDs including edits and polarity changes, and advance high-water only on a successful terminal checkpoint. Partial/cancelled/failed streams retain the prior high-water.
+
 - Deterministic SQL/Python performs counts, rates, cohorts, and sampling calculations.
 - Stage 2 consumes bounded aggregates and selected evidence, not the complete raw review corpus.
 - Language-market analysis must not claim reviewer geography.

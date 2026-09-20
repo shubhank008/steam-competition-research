@@ -337,7 +337,11 @@ def crawl_reviews(
                             "appid": appid.value,
                             "review_type": state.review_type,
                             "cursor": state.cursor,
-                            "high_water_timestamp": state.high_water_timestamp,
+                            "high_water_timestamp": max(
+                                state.previous_high_water or 0,
+                                state.high_water_timestamp or 0,
+                            )
+                            or None,
                             "status": "complete",
                             "stop_reason": reason,
                             "last_page_id": page_id,

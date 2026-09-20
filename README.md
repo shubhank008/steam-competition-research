@@ -2,7 +2,7 @@
 
 Steam Competition Research is a planned CLI pipeline for turning Steam store metadata and large review corpora into a concise, evidence-backed competitive strategy brief. It is designed for product owners and developers who need to understand competitors, find market gaps, prioritize features, avoid technical failures, and improve Steam positioning.
 
-The repository is at the **run-tracking and source-review storage** stage. T001 provides the package feedback loop; T002 adds typed configuration and sanitized manifests; T003 adds domain contracts; T010 adds SQLite migrations and project storage; T011 adds project initialization and competitor management. See [PLAN.md](PLAN.md) for the implementation sequence.
+The repository is at the **resumable review-crawling** stage. T001 provides the package feedback loop; T012/T013 provide run tracking and canonical review storage; T022/T023 add dual-stream crawling, durable page checkpoints, retries, cancellation, incremental overlap, source-hash comparison, and polarity-safe refreshes. See [PLAN.md](PLAN.md) for the implementation sequence.
 
 ## What the system will do
 
@@ -68,7 +68,7 @@ Planned major components:
 - Python CLI
 - typed project configuration, explicit precedence, and sanitized run manifests
 - framework-independent domain IDs, statuses, transitions, results, timestamps, hashes, and error taxonomy
-- `curl_cffi` Steam review API adapter (T021 in progress; offline fixture tests)
+- `curl_cffi` Steam review API adapter with resumable dual-stream crawler and incremental refresh (T021–T023 in progress; offline fixture tests)
 - Patchright store-page fallback
 - SQLite migrations and repositories
 - OpenAI-compatible LLM provider adapter, initially configured for OpenCode Go
@@ -79,7 +79,7 @@ Planned major components:
 
 ## Implemented foundation
 
-T001 provides the package foundation; T012 adds resumable run/unit persistence and status views, and T013 adds canonical review storage. Steam collection adapters remain future PLAN tasks.
+T001 provides the package foundation; T012/T013 provide resumable run/unit persistence and canonical review storage; T021 provides the one-page Steam adapter; T022/T023 provide the resumable dual-stream crawler and safe incremental refresh. CLI orchestration remains a future PLAN task.
 
 - Python 3.12 or newer
 - `uv` for the environment and locked dependencies

@@ -380,6 +380,8 @@ For the most recent successfully completed stream crawl, retain its high-water `
 
 This prevents a partial prior run, equal timestamps, edits, and polarity changes from making the crawler stop at the first known ID.
 
+
+
 ### 10.4 Retry policy
 
 Retry connection failures, timeouts, HTTP 429, and retryable 5xx responses using exponential backoff with jitter and server-provided retry hints. Authentication errors, invalid app IDs, invalid response schemas, and exhausted retries are terminal for the current unit and must be recorded.

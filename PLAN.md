@@ -168,7 +168,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - The official Steam review API reference remains linked in docs.
 - **Suggested commits:** URL/request builder; response parser; failure tests/docs.
 
-### [ ] T022: Implement resumable dual-stream crawling
+### [~] T022: Implement resumable dual-stream crawling
 
 - **Suggested branch:** `feat/review-crawler`
 - **Depends on:** T012, T013, T021
@@ -182,7 +182,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Ctrl-C leaves resumable partial status.
 - **Suggested commits:** single-stream state machine; dual-stream coordinator; interruption/limit tests and docs.
 
-### [ ] T023: Implement safe incremental review refresh
+### [~] T023: Implement safe incremental review refresh
 
 - **Suggested branch:** `feat/incremental-review-refresh`
 - **Depends on:** T022

@@ -231,3 +231,54 @@ def test_cancellation_records_partial_streams(database: Database) -> None:
         ).fetchone()[0]
         == 2
     )
+
+
+def test_fully_known_overlap_preserves_high_water(database: Database) -> None:
+    project_id, run_id = setup(database)
+    initial_pages = pages()
+    initial_pages[("positive", "*")] = ReviewPage(
+        AppId(440),
+        "positive",
+        "p1",
+        (
+            review("p1", voted_up=True, updated=200),
+            review("p2", voted_up=True, updated=300),
+        ),
+        {},
+    )
+    source = FixtureSource(initial_pages, [])
+    crawl_reviews(
+        database,
+        source,
+        project_id=project_id,
+        run_id=run_id,
+        appid=AppId(440),
+        sleep=lambda _: None,
+    )
+    before = database.connection.execute(
+        "SELECT high_water_timestamp FROM review_stream_state "
+        "WHERE review_type = 'positive'"
+    ).fetchone()[0]
+    source.pages[("positive", "*")] = ReviewPage(
+        AppId(440), "positive", "old", (review("p1", voted_up=True, updated=200),), {}
+    )
+    source.pages[("positive", "old")] = ReviewPage(
+        AppId(440), "positive", "old", (), {}
+    )
+    result = crawl_reviews(
+        database,
+        source,
+        project_id=project_id,
+        run_id=run_id,
+        appid=AppId(440),
+        incremental=True,
+        limits=CrawlLimits(overlap_seconds=50),
+        sleep=lambda _: None,
+    )
+    positive = next(item for item in result.streams if item.review_type == "positive")
+    assert positive.stop_reason == "fully_known_overlap"
+    after = database.connection.execute(
+        "SELECT high_water_timestamp FROM review_stream_state "
+        "WHERE review_type = 'positive'"
+    ).fetchone()[0]
+    assert after == before
