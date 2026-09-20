@@ -769,7 +769,7 @@ The JSON schema enforces item limits. T061 persists a bounded payload, prompt/sc
 
 ### 16.3 Implemented Stage 2 storage and rendering boundary
 
-`steam_research.synthesis.Synthesizer` accepts only `Stage2EvidencePayload`. Its persisted `payload_json` contains metric references, selected bounded excerpts, and source lineage; it never copies review `raw_json` or a full corpus. `synthesis_runs.output_json` is the canonical validated result. `steam_research.reporting.render_markdown` accepts that result plus the payload, performs no provider calls, emits stable sections and local metric/review/selection IDs, and rejects configured word-limit violations.
+`steam_research.synthesis.Synthesizer` accepts only `Stage2EvidencePayload`. Its persisted `payload_json` contains metric references, selected bounded excerpts, and source lineage; it never copies review `raw_json` or a full corpus. `synthesis_runs.output_json` is the canonical validated result. `steam_research.reporting.render_markdown` accepts that result plus the payload, performs no provider calls, emits stable sections for expectations, vulnerabilities, positioning, store strategy, priorities, risks, and caveats, includes local metric/review/selection IDs, and rejects configured word-limit violations.
 
 ## 17. CLI contract
 

@@ -56,7 +56,21 @@ def render_markdown(
             lines.append(f"| {name} | {signal} |")
     else:
         lines.append("No competitor comparison was supplied.")
-    lines.extend(["", "## Ranked priorities"])
+    lines.extend(
+        [
+            "",
+            "## Market expectations",
+            _bullet(output.market_expectations),
+            "",
+            "## Competitor vulnerabilities",
+            _bullet(output.vulnerabilities),
+            "",
+            "## Positioning and store strategy",
+            _bullet(output.positioning + output.store_recommendations),
+            "",
+            "## Ranked priorities",
+        ]
+    )
     if output.recommendations:
         for recommendation in sorted(
             output.recommendations, key=lambda item: item.rank

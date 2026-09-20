@@ -284,6 +284,10 @@ class Stage2Output:
     risks_and_counterevidence: tuple[str, ...]
     coverage_and_caveats: tuple[str, ...]
     competitor_grid: tuple[Mapping[str, Any], ...] = ()
+    market_expectations: tuple[str, ...] = ()
+    vulnerabilities: tuple[str, ...] = ()
+    positioning: tuple[str, ...] = ()
+    store_recommendations: tuple[str, ...] = ()
     schema_version: str = STAGE2_SCHEMA_VERSION
 
     @classmethod
@@ -315,6 +319,16 @@ class Stage2Output:
             competitor_grid=tuple(
                 dict(item) for item in data.get("competitor_grid", [])
             ),
+            market_expectations=tuple(
+                str(item) for item in data.get("market_expectations", [])
+            ),
+            vulnerabilities=tuple(
+                str(item) for item in data.get("vulnerabilities", [])
+            ),
+            positioning=tuple(str(item) for item in data.get("positioning", [])),
+            store_recommendations=tuple(
+                str(item) for item in data.get("store_recommendations", [])
+            ),
             schema_version=str(data["schema_version"]),
         )
 
@@ -330,6 +344,14 @@ class Stage2Output:
             raise Stage2ValidationError("too many recommendations")
         if len(self.risks_and_counterevidence) > payload.limits.max_risks:
             raise Stage2ValidationError("too many risks")
+        if len(self.market_expectations) > payload.limits.max_priorities:
+            raise Stage2ValidationError("too many market expectations")
+        if len(self.vulnerabilities) > payload.limits.max_vulnerabilities:
+            raise Stage2ValidationError("too many vulnerabilities")
+        if len(self.positioning) > payload.limits.max_priorities:
+            raise Stage2ValidationError("too many positioning items")
+        if len(self.store_recommendations) > payload.limits.max_priorities:
+            raise Stage2ValidationError("too many store recommendations")
         if self.status == "insufficient_evidence" and not self.coverage_and_caveats:
             raise Stage2ValidationError("insufficient evidence requires a caveat")
         metric_ids = {metric.metric_id for metric in payload.metrics}
@@ -337,7 +359,14 @@ class Stage2Output:
         for recommendation in self.recommendations:
             recommendation.validate(metric_ids, review_ids)
         if _GEOGRAPHY_TERMS.search(
-            " ".join(self.executive_direction + self.risks_and_counterevidence)
+            " ".join(
+                self.executive_direction
+                + self.risks_and_counterevidence
+                + self.market_expectations
+                + self.vulnerabilities
+                + self.positioning
+                + self.store_recommendations
+            )
         ):
             raise Stage2ValidationError("Stage 2 output must not make geography claims")
 
@@ -350,6 +379,10 @@ class Stage2Output:
             "risks_and_counterevidence": list(self.risks_and_counterevidence),
             "coverage_and_caveats": list(self.coverage_and_caveats),
             "competitor_grid": [dict(item) for item in self.competitor_grid],
+            "market_expectations": list(self.market_expectations),
+            "vulnerabilities": list(self.vulnerabilities),
+            "positioning": list(self.positioning),
+            "store_recommendations": list(self.store_recommendations),
         }
 
 
@@ -392,5 +425,25 @@ def stage2_json_schema(limits: Stage2Limits | None = None) -> dict[str, Any]:
                 "items": {"type": "string"},
             },
             "coverage_and_caveats": {"type": "array", "items": {"type": "string"}},
+            "market_expectations": {
+                "type": "array",
+                "maxItems": limits.max_priorities,
+                "items": {"type": "string"},
+            },
+            "vulnerabilities": {
+                "type": "array",
+                "maxItems": limits.max_vulnerabilities,
+                "items": {"type": "string"},
+            },
+            "positioning": {
+                "type": "array",
+                "maxItems": limits.max_priorities,
+                "items": {"type": "string"},
+            },
+            "store_recommendations": {
+                "type": "array",
+                "maxItems": limits.max_priorities,
+                "items": {"type": "string"},
+            },
         },
     }

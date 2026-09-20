@@ -60,11 +60,17 @@ def test_renderer_handles_multiple_competitors_and_rejects_word_overflow() -> No
         ("Counterevidence remains limited.",),
         ("Two competitors were compared.",),
         ({"name": "A", "signal": "Strong"}, {"name": "B", "signal": "Weak"}),
+        ("Reliable onboarding is expected.",),
+        ("Setup friction is exposed.",),
+        ("Lead with a clear promise.",),
+        ("Use proof-led store imagery.",),
     )
     rendered = render_markdown(
         output, contract(), limits=ReportLimits(min_words=1, max_words=300)
     )
     assert "| A | Strong |" in rendered
+    assert "Reliable onboarding is expected." in rendered
+    assert "Use proof-led store imagery." in rendered
     assert "| B | Weak |" in rendered
     with pytest.raises(ValueError, match="words"):
         render_markdown(
