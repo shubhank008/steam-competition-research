@@ -11,9 +11,13 @@ from steam_research.steam.contracts import (
     source_hash,
     validate_review_payload,
 )
+from steam_research.steam.reviews import CurlCffiTransport, HttpResponse, SteamReviewApi
 
 __all__ = [
+    "CurlCffiTransport",
+    "HttpResponse",
     "OffTopicPolicy",
+    "SteamReviewApi",
     "Review",
     "ReviewPage",
     "ReviewPageRequest",

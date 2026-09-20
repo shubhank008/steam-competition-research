@@ -279,7 +279,7 @@ class ReviewSource(Protocol):
     def fetch_page(self, request: ReviewPageRequest) -> ReviewPage: ...
 ```
 
-`ReviewPageRequest` includes app ID, review type, encoded cursor, page size, language, purchase type, filter, and off-topic policy. The adapter must use a URL builder that encodes cursor values exactly once.
+`ReviewPageRequest` includes app ID, review type, encoded cursor, page size, language, purchase type, filter, and off-topic policy. The adapter must use a URL builder that encodes cursor values exactly once. T021 uses `curl_cffi`, passes `json=1`, `num_per_page=100`, `review_type`, `purchase_type`, `filter`, and `filter_offtopic_activity`, then validates JSON before returning the framework-independent page contract. HTTP 429 and 5xx errors are retryable; authentication, not-found, invalid-request, malformed JSON, and schema failures are terminal. The adapter fetches one page only; crawling and persistence remain separate.
 
 ### 8.4 LLM provider
 

@@ -68,7 +68,7 @@ Planned major components:
 - Python CLI
 - typed project configuration, explicit precedence, and sanitized run manifests
 - framework-independent domain IDs, statuses, transitions, results, timestamps, hashes, and error taxonomy
-- `curl_cffi` Steam adapters (review API contract and adapter work are in progress)
+- `curl_cffi` Steam review API adapter (T021 in progress; offline fixture tests)
 - Patchright store-page fallback
 - SQLite migrations and repositories
 - OpenAI-compatible LLM provider adapter, initially configured for OpenCode Go
