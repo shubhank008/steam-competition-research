@@ -322,7 +322,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 
 ## 8. Phase 5 — Aggregation and analytical exports
 
-### [ ] T050: Implement deterministic aggregate engine
+### [~] T050: Implement deterministic aggregate engine
 
 - **Suggested branch:** `feat/aggregate-engine`
 - **Depends on:** T013, T031, T043
@@ -339,7 +339,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 
 **Current readiness:** [~] T050/T051 implementation is present in `steam_research.aggregation`; remaining work is broader fixture coverage and full-corpus validation before merge.
 
-### [ ] T051: Implement representative evidence selection
+### [~] T051: Implement representative evidence selection
 
 - **Suggested branch:** `feat/evidence-selection`
 - **Depends on:** T050

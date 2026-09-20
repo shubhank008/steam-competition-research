@@ -147,6 +147,81 @@ def aggregate(
                         coverage,
                     )
                 )
+
+            taxonomy_ids = sorted(
+                {
+                    aspect["taxonomy_id"]
+                    for _, result in subset
+                    for aspect in result.get("aspects", [])
+                }
+            )
+            for taxonomy_id in taxonomy_ids:
+                for sentiment in ("positive", "negative", "mixed", "neutral"):
+                    dims = {
+                        **dimensions,
+                        "taxonomy_id": taxonomy_id,
+                        "sentiment": sentiment,
+                    }
+                    matching = sum(
+                        any(
+                            aspect["taxonomy_id"] == taxonomy_id
+                            and aspect["sentiment"] == sentiment
+                            for aspect in result.get("aspects", [])
+                        )
+                        for _, result in subset
+                    )
+                    metrics.append(
+                        Metric(
+                            _metric_id("aspect_rate", dims),
+                            "aspect_rate",
+                            dims,
+                            matching,
+                            len(subset),
+                            "classified reviews of polarity",
+                            coverage,
+                        )
+                    )
+            for metric_name, numerator, caveat in (
+                (
+                    "refunded_rate",
+                    sum(row["refunded"] for row, _ in subset),
+                    "API refund fact is distinct from textual abandonment evidence",
+                ),
+                (
+                    "abandonment_mention_rate",
+                    sum(
+                        result.get("self_reported_abandonment", {}).get(
+                            "mentioned", False
+                        )
+                        for _, result in subset
+                    ),
+                    "self-reported abandonment is unverified text evidence",
+                ),
+            ):
+                metrics.append(
+                    Metric(
+                        _metric_id(metric_name, dimensions),
+                        metric_name,
+                        dimensions,
+                        numerator,
+                        len(subset),
+                        "classified reviews of polarity",
+                        coverage,
+                        (caveat,),
+                    )
+                )
+            metrics.append(
+                Metric(
+                    _metric_id("helpfulness_visibility", dimensions),
+                    "helpfulness_visibility",
+                    dimensions,
+                    sum(row["votes_up"] for row, _ in subset),
+                    sum(row["votes_up"] for row, _ in subset),
+                    "up-vote visibility among classified reviews of polarity",
+                    coverage,
+                    ("visibility weighting is separate from unweighted prevalence",),
+                )
+            )
             for cohort in ("early", "established", "long", "unknown"):
                 cohort_rows = [
                     (row, result)
@@ -275,8 +350,6 @@ def select_evidence(
         for aspect in result.get("aspects", []):
             quote = aspect.get("evidence", "").strip()
             if not quote or len(quote) > max_quote_chars:
-                quote = quote[:max_quote_chars].rstrip()
-            if not quote:
                 continue
             direction = (
                 "confirming"

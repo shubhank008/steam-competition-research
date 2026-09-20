@@ -144,7 +144,7 @@ Paths remain configurable. Structured JSON is canonical for synthesis; Markdown 
 
 ### Deterministic aggregates and evidence
 
-The T050/T051 foundation is available through `steam_research.aggregation`. It computes bounded metrics from current eligible reviews and compatible successful Stage 1 results, preserving counts, denominators, coverage, source/classification lineage, and explicit caveats. Zero-denominator rates are `null`; language labels are never treated as geography; low playtime indicates early friction rather than verified churn; API refunds and unverified abandonment text remain separate. Representative evidence uses stable ranking, quote-length bounds, exact normalized duplicate suppression, per-language limits, and confirming/counterevidence labels. Parquet export, Stage 2 synthesis, and Markdown rendering are not included.
+The T050/T051 foundation is available through `steam_research.aggregation`. It computes bounded metrics from current eligible reviews and compatible successful Stage 1 results, preserving counts, denominators, coverage, source/classification lineage, and explicit caveats. Zero-denominator rates are `null`; language labels are never treated as geography; low playtime indicates early friction rather than verified churn; API refunds and unverified abandonment text remain separate. Representative evidence uses stable confidence-plus-hash ranking, exact source-substring quote bounds (oversized evidence is skipped), normalized duplicate suppression, per-language limits, and confirming/counterevidence labels. Parquet export, Stage 2 synthesis, and Markdown rendering are not included.
 
 ## Planned CLI
 
