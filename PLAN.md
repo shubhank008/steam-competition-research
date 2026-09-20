@@ -380,7 +380,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Insufficient-evidence output is valid.
 - **Suggested commits:** input payload; output models/schema; validation tests/docs.
 
-### [ ] T061: Implement cross-competitor synthesis
+### [~] T061: Implement cross-competitor synthesis
 
 - **Suggested branch:** `feat/stage2-synthesis`
 - **Depends on:** T040, T060
@@ -393,7 +393,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Request ceilings produce resumable partial status.
 - **Suggested commits:** prompt/payload builder; synthesis executor/storage; claim/lineage tests/docs.
 
-### [ ] T062: Render the concise Markdown strategy brief
+### [~] T062: Render the concise Markdown strategy brief
 
 - **Suggested branch:** `feat/strategy-report`
 - **Depends on:** T060, T061

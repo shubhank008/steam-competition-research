@@ -2,7 +2,7 @@
 
 Steam Competition Research is a planned CLI pipeline for turning Steam store metadata and large review corpora into a concise, evidence-backed competitive strategy brief. It is designed for product owners and developers who need to understand competitors, find market gaps, prioritize features, avoid technical failures, and improve Steam positioning.
 
-The repository is at the **bounded Stage 1 execution, scope, and evaluation foundation** stage. T001 provides the package feedback loop; T012/T013 provide run tracking and canonical review storage; T022/T023 add dual-stream crawling, durable page checkpoints, retries, cancellation, incremental overlap, source-hash comparison, and polarity-safe refreshes; T030/T031 add versioned eligibility decisions and universal/project taxonomy loading; T040 adds capability-gated OpenCode Go structured generation contracts; T041 adds the versioned Stage 1 schema, prompt delimiters, taxonomy validation, and evidence checks; T042/T043 add SQLite-backed token-aware batching, bounded repair/split/quarantine, lineage, deterministic scope selection, and resumable ceilings; T044 adds a synthetic multilingual gold-set fixture and deterministic offline evaluator. CLI orchestration, aggregation, and reporting remain future tasks. See [PLAN.md](PLAN.md) for the implementation sequence.
+The repository is at the **bounded Stage 2 synthesis and deterministic report foundation** stage. T001 provides the package feedback loop; T012/T013 provide run tracking and canonical review storage; T022/T023 add dual-stream crawling, durable page checkpoints, retries, cancellation, incremental overlap, source-hash comparison, and polarity-safe refreshes; T030/T031 add versioned eligibility decisions and universal/project taxonomy loading; T040 adds capability-gated OpenCode Go structured generation contracts; T041 adds the versioned Stage 1 schema, prompt delimiters, taxonomy validation, and evidence checks; T042/T043 add SQLite-backed token-aware batching, bounded repair/split/quarantine, lineage, deterministic scope selection, and resumable ceilings; T044 adds a synthetic multilingual gold-set fixture and deterministic offline evaluator. Aggregation, bounded synthesis, and deterministic reporting foundations are now implemented; full CLI orchestration remains a future task. See [PLAN.md](PLAN.md) for the implementation sequence.
 
 ## What the system will do
 
@@ -146,7 +146,7 @@ Paths remain configurable. Structured JSON is canonical for synthesis; Markdown 
 
 The T050/T051 foundation is available through `steam_research.aggregation`. It computes bounded metrics from current eligible reviews and compatible successful Stage 1 results, preserving counts, denominators, coverage, source/classification lineage, and explicit caveats. Zero-denominator rates are `null`; language labels are never treated as geography; low playtime indicates early friction rather than verified churn; API refunds and unverified abandonment text remain separate. Representative evidence uses stable confidence-plus-hash ranking, exact source-substring quote bounds (oversized evidence is skipped), normalized duplicate suppression, per-language limits, and confirming/counterevidence labels.
 
-T052 adds `steam_research.export.export_parquet`, an optional PyArrow exporter that rebuilds five deterministic datasets (reviews, classifications, aspects, aggregates, and quotes) from SQLite. It writes one file per dataset with bounded row groups, a versioned schema and lineage manifest, and no reviewer profile identity. Install the optional dependency with `uv sync --extra parquet`. T060 adds provider-independent `steam_research.stage2` payload/output contracts with versioned prompt/schema identifiers, metric/evidence lineage, hard limits, explicit insufficient-evidence status, and geography safeguards. Provider execution, synthesis orchestration, and Markdown rendering remain future tasks.
+T052 adds `steam_research.export.export_parquet`, an optional PyArrow exporter that rebuilds five deterministic datasets (reviews, classifications, aspects, aggregates, and quotes) from SQLite. It writes one file per dataset with bounded row groups, a versioned schema and lineage manifest, and no reviewer profile identity. Install the optional dependency with `uv sync --extra parquet`. T060 adds provider-independent `steam_research.stage2` payload/output contracts with versioned prompt/schema identifiers, metric/evidence lineage, hard limits, explicit insufficient-evidence status, and geography safeguards. T061 adds bounded provider execution in `steam_research.synthesis`, migration-8 persistence, post-validation, repair, and resumable cost ceilings. T062 adds deterministic `steam_research.reporting` Markdown rendering; structured JSON remains canonical and rendering never calls a model.
 
 ## Planned CLI
 
@@ -201,7 +201,7 @@ Taxonomies are safe-loaded from YAML. Use `config/taxonomies/universal-core.yaml
 | Steam collection contracts and fixtures | In progress (T020) |
 | Stage 1 classification | Not started |
 | Aggregation | Not started |
-| Stage 2 strategy brief | Not started |
+| Stage 2 strategy brief | In progress (T061/T062 [~]) |
 
 The project is ready to begin **T001: Bootstrap the Python package and feedback loop** from [PLAN.md](PLAN.md).
 

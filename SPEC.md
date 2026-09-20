@@ -765,7 +765,11 @@ validation_action
 counterevidence[]
 ```
 
-The JSON schema enforces item limits. A deterministic renderer creates Markdown and applies a final word-limit check. An overlong response is rejected or reduced through a bounded schema-preserving retry, not silently truncated mid-section.
+The JSON schema enforces item limits. T061 persists a bounded payload, prompt/schema identity, provider usage, output, and lineage in migration 8. Provider output is parsed and post-validated locally; invalid JSON, unknown metric/review references, non-positive denominators, and geography claims receive bounded repair attempts. Request/token/cost ceilings produce resumable partial runs without sending a request that exceeds the token ceiling. T062's deterministic renderer creates Markdown and applies a final word-limit check. An overlong response is rejected, not silently truncated mid-section.
+
+### 16.3 Implemented Stage 2 storage and rendering boundary
+
+`steam_research.synthesis.Synthesizer` accepts only `Stage2EvidencePayload`. Its persisted `payload_json` contains metric references, selected bounded excerpts, and source lineage; it never copies review `raw_json` or a full corpus. `synthesis_runs.output_json` is the canonical validated result. `steam_research.reporting.render_markdown` accepts that result plus the payload, performs no provider calls, emits stable sections and local metric/review/selection IDs, and rejects configured word-limit violations.
 
 ## 17. CLI contract
 
@@ -778,6 +782,7 @@ steam-research app list
 steam-research crawl store [--app APPID | --all]
 steam-research crawl reviews [--app APPID | --all]
 steam-research classify [--scope SCOPE] [--app APPID | --all]
+
 steam-research aggregate
 steam-research synthesize
 steam-research run
