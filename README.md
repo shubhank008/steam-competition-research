@@ -219,6 +219,9 @@ Taxonomies are safe-loaded from YAML. Use `config/taxonomies/universal-core.yaml
 | Aggregation | Implemented (T050/T051 [~]) |
 | Stage 2 strategy brief | In progress (T061/T062 [~]) |
 | Cohesive CLI pipeline | In progress (T063 [~]) |
+| Scale benchmark harness | Implemented and measured (T072 [~]) |
+
+T072 adds an offline scale harness at `tests/benchmarks/scale_benchmark.py`. Repeat the recorded 100k/1M measurements with `uv run python tests/benchmarks/scale_benchmark.py --size 100000 --size 1000000`; use `--no-export` when measuring the 1M ingest/query path. The harness generates data in code, uses temporary SQLite/Parquet paths, requires no network or provider credentials, and reports JSON database size, ingest, query, aggregate, classification planning, export, and peak-RSS measurements. On 2026-07-08 in the current Linux x86_64 container (6 CPUs, Python 3.13.14, uv 0.12.0), 100k used 84,987,904 bytes and took 13.874s to ingest; 1M used 884,719,616 bytes and took 231.829s. Aggregate timing used an empty eligible/classified population, so no tuning was justified; live smoke and provider execution remain out of scope.
 
 The project is ready to continue **T063: Orchestrate full CLI pipeline** from [PLAN.md](PLAN.md).
 

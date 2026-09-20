@@ -450,7 +450,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 - **Suggested commits:** tests/findings fixes by subsystem; final guardrail docs.
 - **Progress note (2026-07-08):** Added migration-9 bounded diagnostics persisted without source payloads, safe human/JSON status fields, credential/URL redaction, and app-level crawl timing/count/error categories. Hardened local fixture loading against symlinks and oversized files; provider endpoint validation rejects credentials, query strings, fragments, and non-HTTPS URLs; adversarial prompt and provider tests cover instruction injection and schema-boundary preservation. T070/T071 remain `[~]` pending full validation and review.
 
-### [ ] T072: Benchmark scale and tune defaults
+### [~] T072: Benchmark scale and tune defaults
 
 - **Suggested branch:** `perf/scale-baseline`
 - **Depends on:** T063, T070
@@ -461,6 +461,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - No full-corpus in-memory requirement is observed.
   - Index changes include before/after evidence and migration tests.
 - **Suggested commits:** benchmark harness; measured tuning; documented baselines.
+- **Progress note (2026-07-08):** Added `tests/benchmarks/scale_benchmark.py` and a non-brittle harness regression check. Repeat with `uv run python tests/benchmarks/scale_benchmark.py --size 100000 --size 1000000`; the 1M measurement used `--no-export`. In the current Linux x86_64 container (6 CPUs, 62 GiB RAM, Python 3.13.14, uv 0.12.0), 100k used 84,987,904 bytes, ingested in 13.874s (7,207.8 reviews/s), grouped in 0.119s, and exported reviews in 1.660s; peak RSS was 112.6 MiB. 1M used 884,719,616 bytes, ingested in 231.829s (4,313.5 reviews/s), grouped in 1.358s, estimated classification tokens in 8.276s, and held peak RSS at 61.7 MiB. Batch planning was capped at a 100k sample and took 0.556s/0.593s. Runtime artifacts were temporary and removed. Full pytest (124 passed), mypy, Ruff, and the focused harness test pass. No index or transaction default was changed. T072 remains `[~]`: the generated corpus does not seed eligibility/classification lineage, so aggregate and classified/aspect export timings are empty-population paths; a seeded analytical comparison is still needed before claiming complete acceptance.
 
 ### [ ] T073: Run live Steam and provider smoke validation
 
