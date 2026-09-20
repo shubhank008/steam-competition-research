@@ -8,6 +8,7 @@ from steam_research import __version__
 
 app = typer.Typer(
     add_completion=False,
+    invoke_without_command=True,
     help="Collect and analyze Steam competitor research.",
 )
 
