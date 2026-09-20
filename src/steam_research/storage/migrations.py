@@ -205,12 +205,86 @@ def _migration_5(connection: sqlite3.Connection) -> None:
     )
 
 
+def _migration_6(connection: sqlite3.Connection) -> None:
+    connection.executescript(
+        """
+        CREATE TABLE classification_runs (
+            id TEXT PRIMARY KEY NOT NULL,
+            project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            scope TEXT NOT NULL CHECK (scope IN ('all', 'progressive', 'stratified', 'unclassified-only')),
+            seed INTEGER NOT NULL,
+            source_population INTEGER NOT NULL CHECK (source_population >= 0),
+            selected_count INTEGER NOT NULL CHECK (selected_count >= 0),
+            prompt_version TEXT NOT NULL,
+            prompt_hash TEXT NOT NULL,
+            taxonomy_version TEXT NOT NULL,
+            taxonomy_hash TEXT NOT NULL,
+            model_policy TEXT NOT NULL,
+            schema_version TEXT NOT NULL,
+            policy_hash TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (status IN ('pending', 'running', 'completed', 'partial', 'failed', 'cancelled')),
+            request_ceiling INTEGER NOT NULL CHECK (request_ceiling >= 0),
+            token_ceiling INTEGER NOT NULL CHECK (token_ceiling >= 0),
+            cost_ceiling_usd REAL NOT NULL CHECK (cost_ceiling_usd >= 0),
+            requests_used INTEGER NOT NULL DEFAULT 0 CHECK (requests_used >= 0),
+            tokens_used INTEGER NOT NULL DEFAULT 0 CHECK (tokens_used >= 0),
+            cost_used_usd REAL NOT NULL DEFAULT 0 CHECK (cost_used_usd >= 0),
+            created_at TEXT NOT NULL,
+            completed_at TEXT,
+            error_summary TEXT
+        );
+        CREATE TABLE classification_batches (
+            id TEXT PRIMARY KEY NOT NULL,
+            run_id TEXT NOT NULL REFERENCES classification_runs(id) ON DELETE CASCADE,
+            batch_number INTEGER NOT NULL,
+            status TEXT NOT NULL CHECK (status IN ('pending', 'running', 'completed', 'failed', 'quarantined')),
+            input_count INTEGER NOT NULL CHECK (input_count > 0),
+            estimated_tokens INTEGER NOT NULL CHECK (estimated_tokens > 0),
+            attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+            parent_batch_id TEXT REFERENCES classification_batches(id),
+            error_code TEXT,
+            UNIQUE (run_id, batch_number)
+        );
+        CREATE TABLE review_classifications (
+            run_id TEXT NOT NULL REFERENCES classification_runs(id) ON DELETE CASCADE,
+            batch_id TEXT NOT NULL REFERENCES classification_batches(id) ON DELETE CASCADE,
+            project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            appid INTEGER NOT NULL,
+            recommendationid TEXT NOT NULL,
+            source_hash TEXT NOT NULL,
+            eligibility_policy_hash TEXT NOT NULL,
+            prompt_version TEXT NOT NULL,
+            prompt_hash TEXT NOT NULL,
+            taxonomy_version TEXT NOT NULL,
+            taxonomy_hash TEXT NOT NULL,
+            model_policy TEXT NOT NULL,
+            schema_version TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (status IN ('pending', 'success', 'error', 'quarantined')),
+            result_json TEXT CHECK (result_json IS NULL OR json_valid(result_json)),
+            error_code TEXT,
+            error_detail TEXT,
+            input_tokens INTEGER,
+            output_tokens INTEGER,
+            estimated_cost_usd REAL,
+            inclusion_reason TEXT NOT NULL,
+            sampling_weight REAL NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (run_id, project_id, appid, recommendationid)
+        );
+        CREATE INDEX review_classifications_current_idx ON review_classifications(project_id, appid, recommendationid, status);
+        CREATE INDEX classification_runs_project_idx ON classification_runs(project_id, created_at);
+        """
+    )
+
+
 MIGRATIONS: tuple[Migration, ...] = (
     _migration_1,
     _migration_2,
     _migration_3,
     _migration_4,
     _migration_5,
+    _migration_6,
 )
 
 
