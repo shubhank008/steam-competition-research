@@ -804,7 +804,7 @@ Commands must:
 
 ## 18. Observability and cost controls
 
-Structured local logs include run ID, app ID, stage, stream/batch ID, attempt, duration, result count, and error classification. Review text, API secrets, and full model prompts are not logged by default.
+Structured local diagnostics are persisted in migration 9 and include run ID, app ID, stage, unit/stream/batch ID, attempt, duration, result count, and stable error classification. Status output exposes bounded diagnostic rows in human and JSON forms. Diagnostic messages redact configured secrets, URL credentials, bearer values, and credential-looking assignments; review text, API secrets, response bodies, and full model prompts are never recorded as diagnostics. Crawl stages record app-level timing and counts without retaining source payloads.
 
 LLM usage records request count, input/output tokens when reported, estimated cost, latency, and validation outcome. Zero ceilings mean unlimited by user configuration. A reached ceiling leaves the run partial and resumable.
 
@@ -821,6 +821,10 @@ Crawl metrics include fetched pages, new reviews, updated reviews, unchanged rev
 - Use parameterized SQL exclusively.
 - Constrain local paths to explicit project/configuration locations and avoid destructive cleanup outside them.
 - Before release, document Steam terms/rate-limit responsibilities and model-provider data policies.
+- Offline fixtures must be regular local files, are capped at 10 MB, and are never enabled implicitly.
+- Provider base URLs must use HTTPS and contain no userinfo, query, or fragment; credentials are supplied at runtime only.
+- Review and fixture content is delimited as untrusted data and cannot define instructions, taxonomy, or output schema; structured outputs remain locally validated.
+- Diagnostics are bounded to recent rows and contain operational metadata only. Standard Parquet/report exports omit Steam profile identity; review text and evidence remain derived data and must be handled as potentially personal content.
 
 ## 20. Testing strategy
 

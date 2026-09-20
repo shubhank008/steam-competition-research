@@ -424,7 +424,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 
 ## 10. Phase 7 — Hardening and MVP release
 
-### [ ] T070: Add observability and operational diagnostics
+### [~] T070: Add observability and operational diagnostics
 
 - **Suggested branch:** `feat/observability`
 - **Depends on:** T063
@@ -436,7 +436,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Redaction tests cover configured provider secrets and URL credentials.
 - **Suggested commits:** logging context/redaction; metrics; diagnostics CLI/docs.
 
-### [ ] T071: Complete security, privacy, and prompt-injection review
+### [~] T071: Complete security, privacy, and prompt-injection review
 
 - **Suggested branch:** `hardening/security-review`
 - **Depends on:** T063, T070
@@ -448,6 +448,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - No tracked fixture contains credentials or unnecessary personal identifiers.
   - Findings and fixes are documented in existing docs, not a standalone change-summary file.
 - **Suggested commits:** tests/findings fixes by subsystem; final guardrail docs.
+- **Progress note (2026-07-08):** Added migration-9 bounded diagnostics persisted without source payloads, safe human/JSON status fields, credential/URL redaction, and app-level crawl timing/count/error categories. Hardened local fixture loading against symlinks and oversized files; provider endpoint validation rejects credentials, query strings, fragments, and non-HTTPS URLs; adversarial prompt and provider tests cover instruction injection and schema-boundary preservation. T070/T071 remain `[~]` pending full validation and review.
 
 ### [ ] T072: Benchmark scale and tune defaults
 
