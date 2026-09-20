@@ -307,7 +307,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Cost/request/token ceilings leave resumable partial status.
 - **Suggested commits:** obsolescence/current view; stratified selector; progressive policy and ceilings; CLI/docs.
 
-### [ ] T044: Build and evaluate a multilingual gold set
+### [~] T044: Build and evaluate a multilingual gold set
 
 - **Suggested branch:** `test/stage1-evaluation`
 - **Depends on:** T041, T042

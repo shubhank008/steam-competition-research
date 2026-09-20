@@ -116,6 +116,14 @@ The intended future implementation layout is defined in `SPEC.md`, Section 4. Do
 - Scope selection is deterministic after sorting by app and recommendation ID. `all` selects all eligible inputs, `unclassified-only` excludes compatible successful results, and sampled scopes cover app/language/polarity/playtime/recency/helpfulness with stable seed scores and sampling weights.
 - Use `uv run pytest tests/unit/test_classification.py tests/integration/test_classification.py` for focused offline validation. Provider tests must use boundary fakes; do not call remote models in the default suite.
 
+## T044 Stage 1 evaluation
+
+- `tests/unit/fixtures/gold/stage1_gold_v1.json` is synthetic authored text only; its fixture README is canonical for provenance, annotation guidance, and limitations.
+- `src/steam_research/evaluation.py` uses `stage1.validate_results`, excludes ineligible noise from expected Stage 1 IDs, and deterministically reports validity, coverage/omission, actionability, micro aspect precision/recall, sentiment/posture agreement, and duplicate/unknown batch contamination.
+- Initial regression gates are validity 1.0, omission 0, contamination 0, and 0.80 minimum for other scores; do not describe these as production readiness.
+- Run `uv run pytest tests/unit/test_evaluation.py tests/unit/test_stage1.py` for focused checks. T044 does not implement aggregate/report features.
+
+
 
 ## How to execute a PLAN task
 

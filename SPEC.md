@@ -579,6 +579,10 @@ Classification runs record request, token, and cost ceilings and usage. A ceilin
 T043 supports `all`, `unclassified-only`, `stratified`, and `progressive` selection. Inputs are sorted by app and recommendation ID before selection. Stratification covers app, language, Steam polarity, playtime bucket, recency, and helpfulness; a SHA-256 seed score makes samples stable without provider dependencies. Selected rows retain source population and sampling weight. Current success requires matching source, eligibility policy, prompt/schema, taxonomy, and model-policy identity; changed identity is eligible again. Gold-set evaluation, aggregation, and reporting are outside T042/T043.
 
 
+### 14.1 Gold-set evaluation
+
+T044 stores an authored synthetic fixture at `tests/unit/fixtures/gold/stage1_gold_v1.json`; its README is the annotation and provenance authority. The fixture intentionally covers languages, Steam polarity, low/high playtime, short text, eligibility noise, and multiple aspects without identifiers or copied user corpus text. `steam_research.evaluation.load_gold_set` validates fixture shape, and `evaluate` routes candidate output through the production Stage 1 validator before scoring. It reports schema validity (valid batch = 1), coverage and omission rate (expected eligible IDs present), actionability accuracy, micro category precision/recall over taxonomy IDs, exact sentiment and posture agreement, and batch contamination (duplicate, unknown, or cross-batch IDs). Initial pre-tuning regression gates are validity 1.0, omission 0, contamination 0, and 0.80 minimum for the remaining metrics. These gates are not statistical production thresholds; the fixture requires independent annotation and expansion before release decisions. T044 does not implement aggregation or reporting.
+
 ### 14.2 Output contract
 
 Each input must produce exactly one object:
