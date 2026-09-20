@@ -86,7 +86,7 @@ These are initial decisions for planning and may be finalized in Phase 1:
 - `uv` for environment, dependency, and lock-file management.
 - Typer for the CLI unless Phase 1 identifies a materially simpler option.
 - Pydantic v2 for configuration and external-data validation.
-- SQLAlchemy 2.x plus Alembic for SQLite access and migrations, unless an early spike proves direct `sqlite3` substantially simpler without weakening migrations.
+- The standard-library `sqlite3` module with a small ordered migration runner for SQLite access and migrations; this keeps the Phase 1 foundation dependency-free while preserving explicit migration history and parameterized SQL.
 - `curl_cffi` as the primary HTTP adapter.
 - Patchright as the browser fallback.
 - Pandas and/or DuckDB for analytical transforms and Parquet export; aggregation correctness must not depend on a user manually running either tool.
@@ -217,7 +217,14 @@ Competitor
 
 A project's `(project_id, appid)` pair is unique.
 
-### 7.3 Run
+
+### 7.3 Project storage foundation
+
+The project database is created at `<project-root>/project.sqlite3` and configured on every connection with `PRAGMA foreign_keys = ON`, `PRAGMA journal_mode = WAL`, and a bounded busy timeout. `schema_migrations` records applied integer versions; migrations are ordered, transactional, and safe to reapply.
+
+The first migration creates `projects` and `competitors`. A competitor is unique by `(project_id, appid)`, stores a canonical HTTPS Steam URL, and retains UTC ISO-8601 timestamps. Project and competitor services use parameterized SQL and keep path resolution outside the database layer. The current CLI surface is `init PATH`, `app add APPID_OR_STORE_URL --project PATH`, and `app list --project PATH`.
+
+### 7.4 Run
 
 Every command that mutates or derives project state creates a run:
 

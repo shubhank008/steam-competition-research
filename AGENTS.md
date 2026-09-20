@@ -66,8 +66,11 @@ Run these verified commands from the repository root:
 
 ```bash
 uv run steam-research --help
+uv run steam-research init PATH --name project-name
+uv run steam-research app add APPID_OR_STORE_URL --project PATH
+uv run steam-research app list --project PATH
 uv run pytest
-uv run pytest tests/test_cli.py
+uv run pytest tests/test_cli.py tests/test_project_cli.py tests/integration/test_storage.py
 uv run ruff format --check .
 uv run ruff check .
 uv run mypy
@@ -85,9 +88,11 @@ SPEC.md                   Technical architecture and contracts
 PLAN.md                   Agent-ready implementation sequence
 pyproject.toml            Package metadata and tool configuration
 uv.lock                   Locked runtime and development dependencies
-src/steam_research/       Importable package, config, and domain contracts
+src/steam_research/       Importable package, config, domain, storage, projects, and CLI
 config/                   Default TOML and taxonomy examples
+tests/integration/        Real temporary SQLite integration tests
 tests/test_cli.py         Installed CLI smoke test
+tests/test_project_cli.py Temporary-project CLI integration test
 ```
 
 The intended future implementation layout is defined in `SPEC.md`, Section 4. Do not create speculative modules before their owning PLAN task.

@@ -115,6 +115,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Duplicate additions are idempotent and clearly reported.
   - CLI integration tests use a temporary project.
 - **Suggested commits:** repositories; app parsing; CLI/tests/docs.
+- **Implementation note:** T010 uses standard-library `sqlite3` and an ordered migration runner rather than SQLAlchemy/Alembic; the project root is the path-resolution boundary and stores `project.toml` plus `project.sqlite3`.
 
 ### [ ] T012: Implement runs, units, and status reporting
 
