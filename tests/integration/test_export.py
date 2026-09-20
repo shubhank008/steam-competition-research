@@ -42,7 +42,7 @@ def test_export_empty_project_round_trips_with_manifest(
     manifest = json.loads(exported.manifest_path.read_text())
     assert manifest["export_schema_version"] == EXPORT_SCHEMA_VERSION
     assert manifest["lineage"]["aggregate_run_id"] == result.run_id
-    import pyarrow.parquet as parquet
+    import pyarrow.parquet as parquet  # type: ignore[import-untyped]
 
     assert parquet.read_table(tmp_path / "parquet" / "reviews.parquet").num_rows == 0
     assert parquet.read_table(tmp_path / "parquet" / "aggregates.parquet").num_rows == 0
