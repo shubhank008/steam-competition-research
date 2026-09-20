@@ -34,7 +34,7 @@ RETRYABLE_CODES = frozenset(
 
 
 @dataclass(frozen=True)
-class ExternalError:
+class ExternalError(Exception):
     code: ExternalErrorCode
     message: str
     retry_after_seconds: float | None = None

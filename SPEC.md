@@ -340,6 +340,12 @@ The implementation should prefer stable structured Steam responses for fields th
 
 ## 10. Review collection
 
+### 9.1 Collection contract and fixture policy
+
+Steam collection contracts live in `steam_research.steam.contracts` and do not depend on CLI, HTTP, or persistence frameworks. `ReviewPageRequest` fixes `num_per_page=100`, supports both positive and negative streams, and represents Steam purchase and off-topic options explicitly. Cursor values are retained as source values; URL encoding is performed once by the adapter boundary.
+
+Committed fixtures under `tests/unit/fixtures/steam/` are sanitized, minimal JSON responses. They contain no credentials, profile identifiers, or unnecessary personal data. Contract tests validate success, missing fields, invalid schemas, rate limits, and terminal HTTP outcomes without network access. Source hashes use canonical JSON separators and sorted keys, or exact UTF-8 bytes for raw responses. Review text is never included in diagnostics or error messages.
+
 ### 10.1 Stream identity
 
 Each review stream is identified by:

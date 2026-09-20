@@ -78,6 +78,10 @@ uv run mypy
 
 The default tests are offline. Keep `uv.lock` committed and run `uv lock` only when dependency declarations change.
 
+## Steam collection fixture conventions
+
+Sanitized Steam responses belong under `tests/unit/fixtures/steam/` and must contain only fields needed by contract or adapter tests. Do not include credentials, profile identifiers, complete real review corpora, or full review text in diagnostics. Contract tests must remain offline; external HTTP boundary fakes or fixture transports are acceptable when their use is documented.
+
 ## Current repository structure
 
 ```text

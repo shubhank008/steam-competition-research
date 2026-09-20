@@ -68,7 +68,7 @@ Planned major components:
 - Python CLI
 - typed project configuration, explicit precedence, and sanitized run manifests
 - framework-independent domain IDs, statuses, transitions, results, timestamps, hashes, and error taxonomy
-- `curl_cffi` Steam adapters
+- `curl_cffi` Steam adapters (review API contract and adapter work are in progress)
 - Patchright store-page fallback
 - SQLite migrations and repositories
 - OpenAI-compatible LLM provider adapter, initially configured for OpenCode Go
@@ -178,7 +178,7 @@ Expected provider variables include an API key and base URL for the selected Ope
 | Project and competitor management | T011 in progress ([~]) |
 | Run tracking and status | T012 in progress ([~]) |
 | Source review storage and query API | T013 in progress ([~]) |
-| Steam collection | Not started |
+| Steam collection contracts and fixtures | In progress (T020) |
 | Stage 1 classification | Not started |
 | Aggregation | Not started |
 | Stage 2 strategy brief | Not started |

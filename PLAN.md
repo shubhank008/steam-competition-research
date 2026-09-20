@@ -145,7 +145,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 
 ## 5. Phase 2 — Steam collection
 
-### [ ] T020: Define collection contracts and sanitized fixtures
+### [~] T020: Define collection contracts and sanitized fixtures
 
 - **Suggested branch:** `feat/collection-contracts`
 - **Depends on:** T003
@@ -156,7 +156,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Contracts contain no persistence or CLI dependencies.
 - **Suggested commits:** contracts; fixtures; contract tests/docs.
 
-### [ ] T021: Implement the Steam review API adapter
+### [~] T021: Implement the Steam review API adapter
 
 - **Suggested branch:** `feat/steam-review-adapter`
 - **Depends on:** T001, T020
