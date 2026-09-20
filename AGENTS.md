@@ -109,6 +109,14 @@ The intended future implementation layout is defined in `SPEC.md`, Section 4. Do
 - Stage 1 versions are explicit (`stage1-v1` schema and `stage1-prompt-v1` prompt). Validate exact input ID cardinality, taxonomy membership, enum/range values, evidence substrings, and `verified=false` for self-reported abandonment.
 - T040/T041 do not implement batching, classification scope, or real provider calls.
 
+## T042/T043 classification execution
+
+- `src/steam_research/classification.py` owns provider-independent input projection, local token estimation, deterministic seeded scopes, batch planning, bounded repair/split/quarantine recovery, cost ceilings, and SQLite lineage updates.
+- Migration 6 adds `classification_runs`, `classification_batches`, and `review_classifications`. Every selected eligible input gets a success, error, or quarantine row; source/policy/prompt/taxonomy/model identity is retained for reclassification decisions.
+- Scope selection is deterministic after sorting by app and recommendation ID. `all` selects all eligible inputs, `unclassified-only` excludes compatible successful results, and sampled scopes cover app/language/polarity/playtime/recency/helpfulness with stable seed scores and sampling weights.
+- Use `uv run pytest tests/unit/test_classification.py tests/integration/test_classification.py` for focused offline validation. Provider tests must use boundary fakes; do not call remote models in the default suite.
+
+
 ## How to execute a PLAN task
 
 1. Read the task, dependencies, linked PRD requirements, acceptance criteria, and relevant SPEC sections.

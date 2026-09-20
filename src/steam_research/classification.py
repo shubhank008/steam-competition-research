@@ -242,7 +242,7 @@ class Classifier:
         now = _now()
         with self.database.transaction() as connection:
             connection.execute(
-                "INSERT INTO classification_runs (id, project_id, scope, seed, source_population, selected_count, prompt_version, prompt_hash, taxonomy_version, taxonomy_hash, model_policy, schema_version, policy_hash, status, request_ceiling, token_ceiling, cost_ceiling_usd, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running', ?, ?, ?, ?)",
+                "INSERT INTO classification_runs (id, project_id, scope, seed, source_population, selected_count, prompt_version, prompt_hash, taxonomy_version, taxonomy_hash, model_policy, schema_version, policy_hash, status, request_ceiling, token_ceiling, cost_ceiling_usd, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running', ?, ?, ?, ?)",  # noqa: E501
                 (
                     run_id,
                     project_id,
@@ -268,6 +268,14 @@ class Classifier:
         for batch in batches:
             if ceilings.reached(used_requests, used_tokens, used_cost):
                 break
+            estimated_request_tokens = batch.estimated_tokens + limits.max_output_tokens
+            if (
+                ceilings.max_tokens > 0
+                and used_tokens + estimated_request_tokens > ceilings.max_tokens
+            ):
+                break
+            if ceilings.max_requests > 0 and used_requests >= ceilings.max_requests:
+                break
             self._execute_batch(
                 run_id,
                 batch,
@@ -279,7 +287,7 @@ class Classifier:
                 [used_requests, used_tokens, used_cost],
             )
             row = self.database.connection.execute(
-                "SELECT requests_used, tokens_used, cost_used_usd FROM classification_runs WHERE id = ?",
+                "SELECT requests_used, tokens_used, cost_used_usd FROM classification_runs WHERE id = ?",  # noqa: E501
                 (run_id,),
             ).fetchone()
             used_requests, used_tokens, used_cost = (
@@ -294,7 +302,7 @@ class Classifier:
         status = "partial" if processed < len(selected) else "completed"
         with self.database.transaction() as connection:
             connection.execute(
-                "UPDATE classification_runs SET status = ?, completed_at = ? WHERE id = ?",
+                "UPDATE classification_runs SET status = ?, completed_at = ? WHERE id = ?",  # noqa: E501
                 (status, _now(), run_id),
             )
         return run_id
@@ -319,7 +327,7 @@ class Classifier:
                 (run_id,),
             ).fetchone()[0]
             connection.execute(
-                "INSERT INTO classification_batches (id, run_id, batch_number, status, input_count, estimated_tokens, parent_batch_id) VALUES (?, ?, ?, 'running', ?, ?, ?)",
+                "INSERT INTO classification_batches (id, run_id, batch_number, status, input_count, estimated_tokens, parent_batch_id) VALUES (?, ?, ?, 'running', ?, ?, ?)",  # noqa: E501
                 (
                     batch_id,
                     run_id,
@@ -332,8 +340,8 @@ class Classifier:
             for item in batch.inputs:
                 if parent_batch_id is not None:
                     connection.execute(
-                        "UPDATE review_classifications SET batch_id = ?, status = 'pending', "
-                        "updated_at = ? WHERE run_id = ? AND project_id = ? AND appid = ? "
+                        "UPDATE review_classifications SET batch_id = ?, status = 'pending', "  # noqa: E501
+                        "updated_at = ? WHERE run_id = ? AND project_id = ? AND appid = ? "  # noqa: E501
                         "AND recommendationid = ?",
                         (
                             batch_id,
@@ -346,7 +354,7 @@ class Classifier:
                     )
                 else:
                     connection.execute(
-                        "INSERT INTO review_classifications (run_id, batch_id, project_id, appid, recommendationid, source_hash, eligibility_policy_hash, prompt_version, prompt_hash, taxonomy_version, taxonomy_hash, model_policy, schema_version, status, inclusion_reason, sampling_weight, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)",
+                        "INSERT INTO review_classifications (run_id, batch_id, project_id, appid, recommendationid, source_hash, eligibility_policy_hash, prompt_version, prompt_hash, taxonomy_version, taxonomy_hash, model_policy, schema_version, status, inclusion_reason, sampling_weight, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)",  # noqa: E501
                         (
                             run_id,
                             batch_id,
@@ -454,7 +462,7 @@ class Classifier:
     def _mark_batch(self, batch_id: str, status: str, error: str) -> None:
         with self.database.transaction() as connection:
             connection.execute(
-                "UPDATE classification_batches SET status = ?, attempts = attempts + 1, error_code = ? WHERE id = ?",
+                "UPDATE classification_batches SET status = ?, attempts = attempts + 1, error_code = ? WHERE id = ?",  # noqa: E501
                 (status, error[:120], batch_id),
             )
 
@@ -470,12 +478,12 @@ class Classifier:
         by_id = {item["input_id"]: item for item in raw}
         with self.database.transaction() as connection:
             connection.execute(
-                "UPDATE classification_batches SET status = 'completed', attempts = attempts + 1 WHERE id = ?",
+                "UPDATE classification_batches SET status = 'completed', attempts = attempts + 1 WHERE id = ?",  # noqa: E501
                 (batch_id,),
             )
             for item in batch.inputs:
                 connection.execute(
-                    "UPDATE review_classifications SET status = 'success', result_json = ?, input_tokens = ?, output_tokens = ?, estimated_cost_usd = ?, updated_at = ? WHERE run_id = ? AND batch_id = ? AND project_id = ? AND appid = ? AND recommendationid = ?",
+                    "UPDATE review_classifications SET status = 'success', result_json = ?, input_tokens = ?, output_tokens = ?, estimated_cost_usd = ?, updated_at = ? WHERE run_id = ? AND batch_id = ? AND project_id = ? AND appid = ? AND recommendationid = ?",  # noqa: E501
                     (
                         json.dumps(
                             by_id[item.input_id], sort_keys=True, separators=(",", ":")
@@ -492,7 +500,7 @@ class Classifier:
                     ),
                 )
             connection.execute(
-                "UPDATE classification_runs SET requests_used = ?, tokens_used = ?, cost_used_usd = ? WHERE id = ?",
+                "UPDATE classification_runs SET requests_used = ?, tokens_used = ?, cost_used_usd = ? WHERE id = ?",  # noqa: E501
                 (*usage, run_id),
             )
 
@@ -507,11 +515,11 @@ class Classifier:
     ) -> None:
         with self.database.transaction() as connection:
             connection.execute(
-                "UPDATE classification_batches SET status = ?, attempts = attempts + 1, error_code = ? WHERE id = ?",
+                "UPDATE classification_batches SET status = ?, attempts = attempts + 1, error_code = ? WHERE id = ?",  # noqa: E501
                 (status, code, batch_id),
             )
             connection.execute(
-                "UPDATE review_classifications SET status = ?, error_code = ?, error_detail = ?, updated_at = ? WHERE run_id = ? AND batch_id = ?",
+                "UPDATE review_classifications SET status = ?, error_code = ?, error_detail = ?, updated_at = ? WHERE run_id = ? AND batch_id = ?",  # noqa: E501
                 (status, code, detail[:500], _now(), run_id, batch_id),
             )
 
@@ -521,25 +529,49 @@ def current_classifier_inputs(
     *,
     project_id: str,
     filtering: Any,
+    prompt_version: str = STAGE1_PROMPT_VERSION,
+    taxonomy_hash: str | None = None,
+    model_policy: str | None = None,
     scope: Scope = "unclassified-only",
 ) -> list[ClassificationInput]:
-    """Read eligible reviews and mark compatible successful classifications."""
+    """Read eligible reviews and mark only fully compatible successes current."""
     rows = database.connection.execute(
-        "SELECT r.*, e.policy_hash FROM reviews r JOIN review_eligibility e ON e.project_id = r.project_id AND e.appid = r.appid AND e.recommendationid = r.recommendationid AND e.obsolete_at IS NULL AND e.decision = 'eligible' WHERE r.project_id = ? ORDER BY r.appid, r.recommendationid",
+        "SELECT r.*, e.policy_hash FROM reviews r JOIN review_eligibility e ON e.project_id = r.project_id AND e.appid = r.appid AND e.recommendationid = r.recommendationid AND e.obsolete_at IS NULL AND e.decision = 'eligible' WHERE r.project_id = ? ORDER BY r.appid, r.recommendationid",  # noqa: E501
         (project_id,),
     ).fetchall()
     result: list[ClassificationInput] = []
     current_policy = policy_hash(filtering)
     for row in rows:
+        compatible = [
+            "c.project_id = ?",
+            "c.appid = ?",
+            "c.recommendationid = ?",
+            "c.status = 'success'",
+            "c.source_hash = ?",
+            "c.eligibility_policy_hash = ?",
+            "c.prompt_version = ?",
+            "c.schema_version = ?",
+        ]
+        parameters: list[Any] = [
+            project_id,
+            row["appid"],
+            row["recommendationid"],
+            row["source_hash"],
+            current_policy,
+            prompt_version,
+            STAGE1_SCHEMA_VERSION,
+        ]
+        if taxonomy_hash is not None:
+            compatible.append("c.taxonomy_hash = ?")
+            parameters.append(taxonomy_hash)
+        if model_policy is not None:
+            compatible.append("c.model_policy = ?")
+            parameters.append(model_policy)
         classified = database.connection.execute(
-            "SELECT 1 FROM review_classifications c WHERE c.project_id = ? AND c.appid = ? AND c.recommendationid = ? AND c.status = 'success' AND c.source_hash = ? AND c.eligibility_policy_hash = ? ORDER BY c.updated_at DESC LIMIT 1",
-            (
-                project_id,
-                row["appid"],
-                row["recommendationid"],
-                row["source_hash"],
-                current_policy,
-            ),
+            "SELECT 1 FROM review_classifications c WHERE "
+            + " AND ".join(compatible)
+            + " ORDER BY c.updated_at DESC LIMIT 1",
+            parameters,
         ).fetchone()
         if scope == "unclassified-only" and classified is not None:
             continue

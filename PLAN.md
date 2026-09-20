@@ -280,7 +280,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Evidence spans are checked against source text where practical.
 - **Suggested commits:** output models; prompt builder; adversarial/schema tests/docs.
 
-### [ ] T042: Implement token-aware Stage 1 batching and recovery
+### [~] T042: Implement token-aware Stage 1 batching and recovery
 
 - **Suggested branch:** `feat/stage1-batching`
 - **Depends on:** T030, T041
@@ -294,7 +294,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Successful batches commit atomically.
 - **Suggested commits:** input/batch planner; execution/recovery; persistence/failure tests/docs.
 
-### [ ] T043: Implement classification scope selection
+### [~] T043: Implement classification scope selection
 
 - **Suggested branch:** `feat/classification-scopes`
 - **Depends on:** T013, T030, T042

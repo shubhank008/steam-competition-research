@@ -570,6 +570,15 @@ The classifier receives only fields needed to interpret a review:
 
 The complete object remains in SQLite. Metadata used deterministically after extraction need not be echoed by the model.
 
+### 14.4 Batch execution and scope persistence
+
+T042 projects each eligible review into the bounded Stage 1 fields above and estimates input tokens locally (four UTF-8 characters per estimated token, rounded up). `BatchLimits` enforce both item and estimated-token ceilings. Invalid structured output receives at most the configured repair attempt; persistent invalid batches split recursively until the configured minimum, then write `quarantined` item rows rather than dropping work. Provider failures are retained as explicit item errors. Batch metadata and each item result are written to SQLite with source hash, eligibility policy hash, prompt/schema versions, taxonomy version/hash, model policy, inclusion reason, sampling weight, usage, and error lineage.
+
+Classification runs record request, token, and cost ceilings and usage. A ceiling leaves the run `partial`; completed and quarantined items remain queryable and later runs can retry failed/quarantined or obsolete work. SQLite transactions insert a batch and its pending item lineage atomically, and successful item updates are committed together.
+
+T043 supports `all`, `unclassified-only`, `stratified`, and `progressive` selection. Inputs are sorted by app and recommendation ID before selection. Stratification covers app, language, Steam polarity, playtime bucket, recency, and helpfulness; a SHA-256 seed score makes samples stable without provider dependencies. Selected rows retain source population and sampling weight. Current success requires matching source, eligibility policy, prompt/schema, taxonomy, and model-policy identity; changed identity is eligible again. Gold-set evaluation, aggregation, and reporting are outside T042/T043.
+
+
 ### 14.2 Output contract
 
 Each input must produce exactly one object:
