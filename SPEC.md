@@ -513,6 +513,13 @@ excluded_low_information
 ```
 
 The decision stores policy version and explanatory metadata.
+### 12.3 Persistence and policy identity
+
+Eligibility decisions are stored in `review_eligibility` keyed by project, app, recommendation ID, and semantic policy hash. Each row records the source hash, policy version/hash, decision, structured rule reason, and decision timestamp. A policy change marks the prior current row obsolete and inserts a new current row; source `reviews.review_text` and `raw_json` are never rewritten by filtering. The large-corpus boundary is strict (`corpus_size > large_corpus_threshold`), making threshold behavior reproducible.
+
+### 13.3 Loader and merge policy
+
+Taxonomy YAML is loaded with safe parsing and validated before classification. Required category fields are `id`, `name`, and `description`; optional parent and example fields are normalized. Parent IDs must resolve within a document and hierarchy cycles are rejected. Project documents must extend `universal-core`; incompatible duplicate IDs fail, while identical definitions are idempotent. Hashes cover canonical sorted JSON, not source formatting, and category additions remain data-only changes.
 
 ## 13. Taxonomy
 

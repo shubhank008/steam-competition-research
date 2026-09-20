@@ -2,7 +2,7 @@
 
 Steam Competition Research is a planned CLI pipeline for turning Steam store metadata and large review corpora into a concise, evidence-backed competitive strategy brief. It is designed for product owners and developers who need to understand competitors, find market gaps, prioritize features, avoid technical failures, and improve Steam positioning.
 
-The repository is at the **localized store metadata and resumable review-crawling** stage. T001 provides the package feedback loop; T012/T013 provide run tracking and canonical review storage; T022/T023 add dual-stream crawling, durable page checkpoints, retries, cancellation, incremental overlap, source-hash comparison, and polarity-safe refreshes. See [PLAN.md](PLAN.md) for the implementation sequence.
+The repository is at the **review eligibility and configurable taxonomy foundation** stage. T001 provides the package feedback loop; T012/T013 provide run tracking and canonical review storage; T022/T023 add dual-stream crawling, durable page checkpoints, retries, cancellation, incremental overlap, source-hash comparison, and polarity-safe refreshes; T030/T031 add versioned eligibility decisions and universal/project taxonomy loading. See [PLAN.md](PLAN.md) for the implementation sequence.
 
 ## What the system will do
 
@@ -164,6 +164,11 @@ These commands do not exist yet. T001 creates the package and initial CLI entry 
 
 Expected provider variables include an API key and base URL for the selected OpenAI-compatible service. Copy `.env.example` for local scalar overrides. Secrets are read at runtime and excluded from manifests; project TOML, environment values, and CLI overrides follow the documented precedence.
 
+### Eligibility and taxonomy foundations
+
+Filtering uses `FilteringConfig` defaults from `eligibility-v1`. Empty, punctuation-only, repeated-token/character, and ASCII-art reviews are excluded from Stage 1 input; short reviews are excluded only above the strict large-corpus threshold unless configured multilingual high-signal terms match. Decisions are stored in SQLite with policy identity and obsolete history, while source review text and raw JSON remain unchanged.
+
+Taxonomies are safe-loaded from YAML. Use `config/taxonomies/universal-core.yaml` for the universal profile or `config/taxonomies/desktop-mascot.yaml` as an extension example. Extensions add hierarchical categories under stable IDs and are merged and hashed canonically, so adding a category requires no Python or SQLite schema change. `project.taxonomy_path` and `STEAM_RESEARCH_TAXONOMY_PATH` select the project taxonomy.
 ## Development status
 
 | Area | Status |

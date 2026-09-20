@@ -223,7 +223,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
 
 ## 6. Phase 3 — Eligibility and taxonomy
 
-### [ ] T030: Implement versioned noise and eligibility filtering
+### [~] T030: Implement versioned noise and eligibility filtering
 
 - **Suggested branch:** `feat/review-eligibility`
 - **Depends on:** T002, T013
@@ -236,7 +236,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Corpus threshold behavior is deterministic.
 - **Suggested commits:** core filters; large-corpus/high-signal policy; persistence/tests/docs.
 
-### [ ] T031: Implement universal and project taxonomy loading
+### [~] T031: Implement universal and project taxonomy loading
 
 - **Suggested branch:** `feat/configurable-taxonomy`
 - **Depends on:** T002
@@ -247,6 +247,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Duplicate incompatible IDs and missing fields fail before classification.
   - Adding a category requires no code or database migration.
   - Taxonomy hash is stable across non-semantic formatting changes.
+- **Implementation notes:** T030 stores immutable source-linked decisions in migration 5 with a semantic policy hash; a newer policy obsoletes the prior current row without deleting reviews. T031 uses YAML-safe loading, normalized JSON hashing, stable IDs, hierarchy checks, universal-core merging, and the shipped desktop-mascot extension. Both tasks remain `[~]` pending downstream classification integration and merge.
 - **Suggested commits:** schema/normalization; universal taxonomy; extension example/tests/docs.
 
 ## 7. Phase 4 — Stage 1 classification

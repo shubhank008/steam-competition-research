@@ -144,6 +144,8 @@ Preserve these unless the PRD and SPEC are intentionally changed in the same bra
 - Project-specific taxonomy extends the universal core through versioned configuration and never creates custom database columns.
 - Stage 2 structured JSON is canonical; Markdown is rendered deterministically.
 - The default report is concise and ranked, not an exhaustive research dump.
+- T030 eligibility decisions are persisted in migration 5; policy hashes are semantic and prior current decisions become obsolete when policy identity changes. Filtering never mutates source review text or raw JSON.
+- T031 taxonomy YAML is parsed with `yaml.safe_load`, validated for required fields, duplicate IDs, parent resolution, and cycles, then merged and hashed from canonical JSON. `desktop-mascot.yaml` is the project extension example; taxonomy additions do not require schema migrations.
 
 ## Coding standards for planned Python code
 
