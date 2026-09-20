@@ -208,7 +208,7 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Parser tests run without network.
 - **Suggested commits:** structured metadata source; HTML parser; storage/CLI/docs.
 
-### [ ] T025: Add Patchright store fallback
+### [~] T025: Add Patchright store fallback
 
 - **Suggested branch:** `feat/store-page-browser-fallback`
 - **Depends on:** T024

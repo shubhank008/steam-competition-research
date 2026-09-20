@@ -27,6 +27,11 @@ from steam_research.steam.store import (
     StorePageParser,
     StorePageSnapshot,
 )
+from steam_research.steam.fallback import (
+    FallbackStorePageFetcher,
+    PatchrightStorePageFetcher,
+    should_fallback,
+)
 
 __all__ = [
     "CrawlCancelled",
@@ -52,4 +57,7 @@ __all__ = [
     "StorePageFetcher",
     "StorePageParser",
     "StorePageSnapshot",
+    "FallbackStorePageFetcher",
+    "PatchrightStorePageFetcher",
+    "should_fallback",
 ]

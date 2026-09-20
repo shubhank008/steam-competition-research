@@ -263,6 +263,8 @@ Initial implementations:
 
 Fallback policy must be explicit. Browser fallback may occur for transport denial, challenge/interstitial detection, or a configured required-content check. A parser failure by itself must be surfaced before a fallback masks a markup change.
 
+T025 fallback triggers are limited to HTTP denial/rate-limit outcomes, connection/timeout failures, or recognizable challenge/interstitial markers. A successful HTTP document is passed to the parser without retrying in a browser; parser-field regressions are therefore not fallback triggers. Patchright is optional and its page and context close in a `finally` path on success, navigation failure, and cancellation.
+
 ### 8.2 Store page parser
 
 ```python

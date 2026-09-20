@@ -69,7 +69,7 @@ Planned major components:
 - typed project configuration, explicit precedence, and sanitized run manifests
 - framework-independent domain IDs, statuses, transitions, results, timestamps, hashes, and error taxonomy
 - `curl_cffi` Steam review API adapter with resumable dual-stream crawler and incremental refresh (T021–T023 in progress; offline fixture tests)
-- Patchright store-page fallback
+- Optional Patchright store-page fallback for explicit denial/challenge responses; install `patchright` and its browser binaries only when browser fallback is needed
 - SQLite migrations and repositories
 - OpenAI-compatible LLM provider adapter, initially configured for OpenCode Go
 - versioned prompts and taxonomy profiles
