@@ -336,6 +336,9 @@ Tasks within a phase may run in parallel only when they do not edit the same con
   - Aggregate runs are reproducible from recorded inputs.
 - **Suggested commits:** cohort/metric primitives; cross-competitor aggregation; sampling/coverage tests/docs.
 
+
+**Current readiness:** [~] T050/T051 implementation is present in `steam_research.aggregation`; remaining work is broader fixture coverage and full-corpus validation before merge.
+
 ### [ ] T051: Implement representative evidence selection
 
 - **Suggested branch:** `feat/evidence-selection`

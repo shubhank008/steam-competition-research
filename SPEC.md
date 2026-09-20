@@ -703,6 +703,12 @@ Quote selection is deterministic and configurable. It should balance:
 
 Selected quotes retain project ID, app ID, recommendation ID, evidence excerpt, and selection reason. Personal profile fields are not exported.
 
+
+### 15.5 Implemented T050/T051 contracts
+
+`steam_research.aggregation.aggregate` reads only current eligible reviews and compatible successful Stage 1 rows. It persists immutable `aggregate_runs` and `aggregate_metrics` lineage, with numerator, denominator, population definition, coverage, and caveats. Zero denominators produce `null` values, not zero. Playtime cohorts are `<60` minutes early, `60–599` established, `>=600` long, and missing unknown. Language is retained as language; no geography inference is emitted. API `refunded` is separate from unverified textual abandonment. `select_evidence` bounds source substrings, uses stable confidence-plus-hash ranking, suppresses exact normalized duplicates, limits per language, and retains review/source lineage plus confirming or counterevidence direction in `quote_selections`. Parquet, Stage 2, and Markdown remain outside these tasks.
+
+
 ## 16. Stage 2 synthesis
 
 ### 16.1 Inputs

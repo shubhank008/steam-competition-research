@@ -56,6 +56,11 @@ Do not rewrite, squash, or force-push shared history unless the user explicitly 
 
 ## Current commands
 
+
+## T050/T051 aggregate foundation
+
+`src/steam_research/aggregation.py` provides deterministic `aggregate` and `select_evidence`. Aggregation joins current eligible decisions to source reviews and successful classifications matching source hashes; it persists migration-7 immutable aggregate runs/metrics and quote selections. Rates retain numerator, denominator, population definition, coverage, and caveats; zero denominators are `None`. Evidence is bounded to Stage 1 source substrings, stable across repeated inputs/configuration, deduplicated, language-diverse, and stores only review/source lineage (never profile identity). Do not infer geography from language or treat low playtime, refunds, or self-reported abandonment as verified churn.
+
 Use Python 3.12 or newer and `uv` 0.12 or newer. Install the exact locked environment with:
 
 ```bash

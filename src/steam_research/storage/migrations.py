@@ -289,6 +289,57 @@ def _migration_6(connection: sqlite3.Connection) -> None:
     )
 
 
+def _migration_7(connection: sqlite3.Connection) -> None:
+    connection.executescript(
+        """
+        CREATE TABLE aggregate_runs (
+            id TEXT PRIMARY KEY NOT NULL,
+            project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            config_hash TEXT NOT NULL,
+            source_population INTEGER NOT NULL CHECK (source_population >= 0),
+            classified_population INTEGER NOT NULL CHECK (classified_population >= 0),
+            status TEXT NOT NULL CHECK (status IN ('completed', 'partial', 'failed')),
+            created_at TEXT NOT NULL,
+            lineage_json TEXT NOT NULL CHECK (json_valid(lineage_json))
+        );
+        CREATE TABLE aggregate_metrics (
+            run_id TEXT NOT NULL REFERENCES aggregate_runs(id) ON DELETE CASCADE,
+            metric_id TEXT NOT NULL,
+            metric_name TEXT NOT NULL,
+            dimensions_json TEXT NOT NULL CHECK (json_valid(dimensions_json)),
+            numerator INTEGER NOT NULL CHECK (numerator >= 0),
+            denominator INTEGER NOT NULL CHECK (denominator >= 0),
+            value REAL,
+            population_definition TEXT NOT NULL,
+            coverage_json TEXT NOT NULL CHECK (json_valid(coverage_json)),
+            caveats_json TEXT NOT NULL CHECK (json_valid(caveats_json)),
+            PRIMARY KEY (run_id, metric_id)
+        );
+        CREATE TABLE quote_selections (
+            run_id TEXT NOT NULL REFERENCES aggregate_runs(id) ON DELETE CASCADE,
+            selection_id TEXT NOT NULL,
+            project_id TEXT NOT NULL,
+            appid INTEGER NOT NULL,
+            recommendationid TEXT NOT NULL,
+            taxonomy_id TEXT,
+            evidence TEXT NOT NULL,
+            selection_reason TEXT NOT NULL,
+            score REAL NOT NULL,
+            direction TEXT NOT NULL CHECK (
+                direction IN ('confirming', 'counterevidence')
+            ),
+            language TEXT NOT NULL,
+            source_hash TEXT NOT NULL,
+            PRIMARY KEY (run_id, selection_id)
+        );
+        CREATE INDEX aggregate_runs_project_idx
+            ON aggregate_runs(project_id, created_at);
+        CREATE INDEX aggregate_metrics_name_idx
+            ON aggregate_metrics(run_id, metric_name);
+        """
+    )
+
+
 MIGRATIONS: tuple[Migration, ...] = (
     _migration_1,
     _migration_2,
@@ -296,6 +347,7 @@ MIGRATIONS: tuple[Migration, ...] = (
     _migration_4,
     _migration_5,
     _migration_6,
+    _migration_7,
 )
 
 
