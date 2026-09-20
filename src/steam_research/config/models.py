@@ -46,6 +46,30 @@ class SteamConfig:
 
 
 @dataclass(frozen=True)
+class FilteringConfig:
+    policy_version: str = "eligibility-v1"
+    large_corpus_threshold: int = 10_000
+    short_character_threshold: int = 10
+    short_word_threshold: int = 3
+    repeated_character_ratio: float = 0.8
+    repeated_token_threshold: int = 3
+    high_signal_terms: tuple[str, ...] = (
+        "bug",
+        "crash",
+        "error",
+        "lag",
+        "love",
+        "hate",
+        "refund",
+        "refundé",
+        "おすすめ",
+        "喜欢",
+        "плохо",
+        "ошибка",
+    )
+
+
+@dataclass(frozen=True)
 class ModelConfig:
     provider: str = "opencode-go"
     model: str = "configured-model-id"
@@ -60,6 +84,7 @@ class ApplicationConfig:
     data_dir: Path = Path("data/steam-research-project")
     taxonomy_path: Path = Path("config/taxonomies/universal-core.yaml")
     steam: SteamConfig = field(default_factory=SteamConfig)
+    filtering: FilteringConfig = field(default_factory=FilteringConfig)
     stage1: ModelConfig = field(default_factory=ModelConfig)
     stage2: ModelConfig = field(default_factory=lambda: ModelConfig(temperature=0.2))
     project_config_path: Path | None = None
@@ -84,6 +109,21 @@ class ApplicationConfig:
         ):
             if getattr(reviews, name) < 0:
                 raise ConfigurationError(f"steam.reviews.{name} must not be negative")
+        filtering = self.filtering
+        if not filtering.policy_version.strip():
+            raise ConfigurationError("filtering.policy_version must not be empty")
+        for name in (
+            "large_corpus_threshold",
+            "short_character_threshold",
+            "short_word_threshold",
+            "repeated_token_threshold",
+        ):
+            if getattr(filtering, name) < 0:
+                raise ConfigurationError(f"filtering.{name} must not be negative")
+        if not 0 < filtering.repeated_character_ratio <= 1:
+            raise ConfigurationError(
+                "filtering.repeated_character_ratio must be between 0 and 1"
+            )
         if require_taxonomy and not self.taxonomy_path.is_file():
             raise ConfigurationError(
                 f"taxonomy file does not exist: {self.taxonomy_path}"
@@ -117,6 +157,10 @@ def _coerce(key: str, value: str) -> Any:
             "max_negative_reviews",
             "incremental_overlap_seconds",
             "max_retries",
+            "large_corpus_threshold",
+            "short_character_threshold",
+            "short_word_threshold",
+            "repeated_token_threshold",
         )
     ):
         return int(value)
@@ -148,6 +192,12 @@ def _build(
             reviews=ReviewConfig(
                 **{**asdict(ReviewConfig()), **steam.get("reviews", {})}
             ),
+        ),
+        filtering=FilteringConfig(
+            **{
+                **asdict(FilteringConfig()),
+                **data.get("filtering", {}),
+            }
         ),
         stage1=ModelConfig(**stage1),
         stage2=ModelConfig(**stage2),

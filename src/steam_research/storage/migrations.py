@@ -176,11 +176,41 @@ def _migration_4(connection: sqlite3.Connection) -> None:
     )
 
 
+def _migration_5(connection: sqlite3.Connection) -> None:
+    connection.executescript(
+        """
+        CREATE TABLE review_eligibility (
+            project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            appid INTEGER NOT NULL CHECK (appid > 0),
+            recommendationid TEXT NOT NULL,
+            source_hash TEXT NOT NULL,
+            policy_version TEXT NOT NULL,
+            policy_hash TEXT NOT NULL,
+            decision TEXT NOT NULL CHECK (decision IN (
+                'eligible', 'excluded_empty', 'excluded_punctuation',
+                'excluded_repetition', 'excluded_ascii_art',
+                'excluded_low_information'
+            )),
+            reason_json TEXT NOT NULL CHECK (json_valid(reason_json)),
+            decided_at TEXT NOT NULL,
+            obsolete_at TEXT,
+            PRIMARY KEY (project_id, appid, recommendationid, policy_hash),
+            FOREIGN KEY (project_id, appid, recommendationid)
+                REFERENCES reviews(project_id, appid, recommendationid)
+                ON DELETE CASCADE
+        );
+        CREATE INDEX review_eligibility_current_idx
+            ON review_eligibility(project_id, appid, recommendationid, obsolete_at);
+        """
+    )
+
+
 MIGRATIONS: tuple[Migration, ...] = (
     _migration_1,
     _migration_2,
     _migration_3,
     _migration_4,
+    _migration_5,
 )
 
 

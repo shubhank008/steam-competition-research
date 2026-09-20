@@ -1,5 +1,6 @@
 """Canonical SQLite storage."""
 
+from steam_research.eligibility import EligibilityDecision, persist_eligibility
 from steam_research.storage.database import Database
 from steam_research.storage.reviews import (
     ReviewRecord,
@@ -25,10 +26,12 @@ from steam_research.storage.store import persist_store_snapshot, query_store_sna
 
 __all__ = [
     "Database",
+    "EligibilityDecision",
     "ReviewRecord",
     "RunStatusView",
     "UpsertCounts",
     "query_reviews",
+    "persist_eligibility",
     "persist_page_checkpoint",
     "record_api_page",
     "update_stream_state",
