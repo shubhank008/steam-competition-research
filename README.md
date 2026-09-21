@@ -90,7 +90,6 @@ The installed entry point supports project initialization, competitor management
 
 ```text
 steam-research init PATH --name project-name
-steam-research app list --project PATH
 steam-research --help
 steam-research --version
 steam-research status --project PATH [--json]
