@@ -30,7 +30,7 @@ from steam_research.llm import (
 )
 from steam_research.llm.contracts import TransportResponse
 from steam_research.observability import Diagnostic, classify_error, redact_text
-from steam_research.projects import Competitor, list_competitors, project_paths
+from steam_research.projects import Competitor, project_paths, reconcile_competitors
 from steam_research.reporting import ReportLimits, render_markdown
 from steam_research.stage2 import (
     EvidenceReference,
@@ -88,7 +88,11 @@ def open_project(root: Path) -> ProjectContext:
         if row is None:
             raise PipelineError("project database is not initialized")
         project_id = str(row[0])
-        competitors = tuple(list_competitors(database))
+        competitors = tuple(reconcile_competitors(database, config.competitors))
+        if not competitors:
+            raise PipelineError(
+                "STEAM_RESEARCH_COMPETITORS must contain at least one app ID"
+            )
     return ProjectContext(
         paths.root, paths.database, paths.config, project_id, config, competitors
     )

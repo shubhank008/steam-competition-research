@@ -777,8 +777,6 @@ Final command names may be refined during CLI implementation, but required capab
 
 ```text
 steam-research init [PATH]
-steam-research app add <URL_OR_APPID>
-steam-research app list
 steam-research crawl store [--app APPID | --all]
 steam-research crawl reviews [--app APPID | --all]
 steam-research classify [--scope SCOPE] [--app APPID | --all]

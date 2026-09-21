@@ -81,6 +81,7 @@ class ModelConfig:
 @dataclass(frozen=True)
 class ApplicationConfig:
     name: str = "steam-research-project"
+    competitors: tuple[int, ...] = ()
     data_dir: Path = Path("data/steam-research-project")
     taxonomy_path: Path = Path("config/taxonomies/universal-core.yaml")
     steam: SteamConfig = field(default_factory=SteamConfig)
@@ -90,6 +91,10 @@ class ApplicationConfig:
     project_config_path: Path | None = None
 
     def validate(self, *, require_taxonomy: bool = True) -> None:
+        if any(appid <= 0 for appid in self.competitors):
+            raise ConfigurationError(
+                "project.competitors must contain positive app IDs"
+            )
         country = self.steam.store.country
         if len(country) != 2 or not country.isascii() or not country.isalpha():
             raise ConfigurationError(
@@ -134,6 +139,7 @@ class ApplicationConfig:
         raw = asdict(self)
         raw.pop("project_config_path", None)
         raw["data_dir"] = str(self.data_dir)
+        raw["competitors"] = list(self.competitors)
         raw["taxonomy_path"] = str(self.taxonomy_path)
         for model_name in ("stage1", "stage2"):
             raw[model_name].pop("api_key", None)
@@ -149,6 +155,8 @@ def _merge_value(target: dict[str, Any], key: str, value: Any) -> None:
 
 
 def _coerce(key: str, value: str) -> Any:
+    if key == "project.competitors":
+        return tuple(int(item.strip()) for item in value.split(",") if item.strip())
     if key.endswith(
         (
             "page_size",
@@ -186,6 +194,7 @@ def _build(
     stage2 = {**stage2_defaults, **models.get("stage2", {})}
     config = ApplicationConfig(
         name=str(project.get("name", ApplicationConfig.name)),
+        competitors=tuple(int(item) for item in project.get("competitors", ())),
         data_dir=Path(project.get("data_dir", ApplicationConfig.data_dir)),
         taxonomy_path=Path(
             project.get("taxonomy_path", ApplicationConfig.taxonomy_path)

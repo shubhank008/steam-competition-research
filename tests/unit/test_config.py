@@ -53,6 +53,25 @@ def test_manifest_redacts_secret_and_serializes_paths(tmp_path: Path) -> None:
     assert manifest["taxonomy_path"] == str(taxonomy)
 
 
+def test_dotenv_loads_and_process_environment_overrides(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    taxonomy = tmp_path / "taxonomy.yaml"
+    taxonomy.write_text("name: test\n", encoding="utf-8")
+    project = tmp_path / "project.toml"
+    project.write_text(f'[project]\ntaxonomy_path = "{taxonomy}"\n', encoding="utf-8")
+    (tmp_path / ".env").write_text(
+        "STEAM_RESEARCH_COMPETITORS=440,730\nSTEAM_RESEARCH_PROJECT_NAME=from-dotenv\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    loaded = load_config(project)
+    assert loaded.competitors == (440, 730)
+    assert loaded.name == "from-dotenv"
+    monkeypatch.setenv("STEAM_RESEARCH_PROJECT_NAME", "from-process")
+    assert load_config(project).name == "from-process"
+
+
 @pytest.mark.parametrize(
     ("key", "value", "message"),
     [

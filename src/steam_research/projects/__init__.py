@@ -11,6 +11,7 @@ from steam_research.projects.service import (
     list_competitors,
     parse_app_id,
     project_paths,
+    reconcile_competitors,
 )
 
 __all__ = [
@@ -22,6 +23,7 @@ __all__ = [
     "canonical_store_url",
     "initialize_project",
     "list_competitors",
+    "reconcile_competitors",
     "parse_app_id",
     "project_paths",
 ]
