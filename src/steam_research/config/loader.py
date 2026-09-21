@@ -8,6 +8,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from dotenv import dotenv_values
+
 from steam_research.config.models import (
     ApplicationConfig,
     Secret,
@@ -18,6 +20,7 @@ from steam_research.config.models import (
 
 ENV_KEYS = {
     "STEAM_RESEARCH_PROJECT_NAME": "project.name",
+    "STEAM_RESEARCH_COMPETITORS": "project.competitors",
     "STEAM_RESEARCH_DATA_DIR": "project.data_dir",
     "STEAM_RESEARCH_TAXONOMY_PATH": "project.taxonomy_path",
     "STEAM_RESEARCH_STORE_COUNTRY": "steam.store.country",
@@ -38,6 +41,21 @@ ENV_KEYS = {
 }
 
 
+def _dotenv_environment(project_path: Path | None) -> dict[str, str]:
+    candidates = []
+    if project_path is not None:
+        candidates.append(project_path.parent / ".env")
+    candidates.append(Path.cwd() / ".env")
+    for candidate in candidates:
+        if candidate.is_file():
+            return {
+                key: value
+                for key, value in dotenv_values(candidate).items()
+                if value is not None
+            }
+    return {}
+
+
 def load_config(
     project_path: Path | None = None,
     *,
@@ -50,7 +68,9 @@ def load_config(
     if project_path is not None:
         with project_path.open("rb") as stream:
             data = tomllib.load(stream)
-    env = os.environ if environ is None else environ
+    process_env = dict(os.environ if environ is None else environ)
+    dotenv_env = {} if environ is not None else _dotenv_environment(project_path)
+    env = {**dotenv_env, **process_env}
     for env_name, dotted_key in ENV_KEYS.items():
         if env_name in env:
             _merge_value(data, dotted_key, _coerce(dotted_key, env[env_name]))

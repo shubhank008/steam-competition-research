@@ -90,8 +90,6 @@ The installed entry point supports project initialization, competitor management
 
 ```text
 steam-research init PATH --name project-name
-steam-research app add APPID_OR_STORE_URL --project PATH
-steam-research app list --project PATH
 steam-research --help
 steam-research --version
 steam-research status --project PATH [--json]
@@ -216,8 +214,6 @@ The final names may be refined during implementation, but the required command s
 
 ```text
 steam-research init [PATH]
-steam-research app add <URL_OR_APPID>
-steam-research app list
 steam-research crawl store [--app APPID | --all]
 steam-research crawl reviews [--app APPID | --all]
 steam-research classify [--scope all|progressive|stratified|unclassified-only]
@@ -230,6 +226,18 @@ steam-research export report
 ```
 
 The implemented command surface is exercised by the offline CLI regression and the clean-room checks recorded in T074.
+
+## Configuration and competitor set
+
+The CLI automatically loads a `.env` file from the project directory or current working directory. Explicit process environment variables override `.env`; project TOML and CLI overrides apply afterward. Secrets remain runtime-only.
+
+Configure the active competitor set as a comma-separated app ID list:
+
+```dotenv
+STEAM_RESEARCH_COMPETITORS=440,730
+```
+
+SQLite retains the internal competitor mapping and historical lineage, but the configured environment list is the source of truth for active competitors. Opening a project reconciles the mapping: new IDs are added, configured IDs are activated, and removed IDs are deactivated without deleting historical data. The `app add` and `app list` commands are not part of the CLI.
 
 ## Configuration approach
 

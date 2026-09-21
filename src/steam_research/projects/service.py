@@ -136,6 +136,48 @@ def add_competitor(database: Database, value: str) -> tuple[Competitor, bool]:
     return competitor, True
 
 
+def reconcile_competitors(
+    database: Database, appids: tuple[int, ...]
+) -> list[Competitor]:
+    """Reconcile configured app IDs into internal historical mappings."""
+    project_id = _project_id(database)
+    configured = set(appids)
+    with database.transaction() as connection:
+        rows = connection.execute(
+            "SELECT id, appid, store_url, display_name "
+            "FROM competitors WHERE project_id = ?",
+            (project_id,),
+        ).fetchall()
+        existing = {int(row[1]): row for row in rows}
+        for appid in sorted(configured):
+            if appid <= 0:
+                raise ProjectError("configured competitor app IDs must be positive")
+            if appid in existing:
+                connection.execute(
+                    "UPDATE competitors SET active = 1 WHERE id = ?",
+                    (existing[appid][0],),
+                )
+            else:
+                connection.execute(
+                    "INSERT INTO competitors "
+                    "(id, project_id, appid, store_url, active, added_at) "
+                    "VALUES (?, ?, ?, ?, 1, ?)",
+                    (
+                        str(uuid4()),
+                        project_id,
+                        appid,
+                        canonical_store_url(appid),
+                        _now(),
+                    ),
+                )
+        for appid, row in existing.items():
+            if appid not in configured:
+                connection.execute(
+                    "UPDATE competitors SET active = 0 WHERE id = ?", (row[0],)
+                )
+    return list_competitors(database)
+
+
 def list_competitors(database: Database) -> list[Competitor]:
     """Return active competitors ordered by Steam app ID."""
     project_id = _project_id(database)

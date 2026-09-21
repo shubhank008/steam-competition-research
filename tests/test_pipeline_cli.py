@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from steam_research.cli import app
@@ -47,18 +48,17 @@ def _fixture(path: Path) -> None:
     )
 
 
-def test_two_competitor_offline_cli_run_and_exports(tmp_path: Path) -> None:
+def test_two_competitor_offline_cli_run_and_exports(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     project = tmp_path / "project"
     fixture = tmp_path / "fixture.json"
     _fixture(fixture)
+    monkeypatch.setenv("STEAM_RESEARCH_COMPETITORS", "101,202")
     assert (
         runner.invoke(app, ["init", str(project), "--name", "Fixture Market"]).exit_code
         == 0
     )
-    for appid in ("101", "202"):
-        result = runner.invoke(app, ["app", "add", appid, "--project", str(project)])
-        assert result.exit_code == 0, result.output
-
     result = runner.invoke(
         app,
         ["run", "--project", str(project), "--offline-fixture", str(fixture)],

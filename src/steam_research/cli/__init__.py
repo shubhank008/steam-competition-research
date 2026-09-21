@@ -19,13 +19,7 @@ from steam_research.pipeline import (
     open_project,
     synthesize_stage,
 )
-from steam_research.projects import (
-    ProjectError,
-    add_competitor,
-    initialize_project,
-    list_competitors,
-    project_paths,
-)
+from steam_research.projects import ProjectError, initialize_project, project_paths
 from steam_research.storage import Database, status_json, status_view
 
 app = typer.Typer(
@@ -33,14 +27,12 @@ app = typer.Typer(
     invoke_without_command=True,
     help="Collect and analyze Steam competitor research.",
 )
-app_commands = typer.Typer(add_completion=False, help="Manage project competitors.")
 crawl_commands = typer.Typer(
     add_completion=False, help="Collect Steam metadata and reviews."
 )
 export_commands = typer.Typer(
     add_completion=False, help="Export derived research outputs."
 )
-app.add_typer(app_commands, name="app")
 app.add_typer(crawl_commands, name="crawl")
 app.add_typer(export_commands, name="export")
 
@@ -71,41 +63,6 @@ def init(
     except ProjectError as error:
         raise typer.BadParameter(str(error)) from error
     typer.echo(f"Initialized project {project.name} at {project.paths.root}")
-
-
-@app_commands.command("add")
-def app_add(
-    value: Annotated[str, typer.Argument(help="Steam app ID or store URL.")],
-    project: Annotated[
-        Path, typer.Option("--project", help="Project directory.")
-    ] = Path("."),
-) -> None:
-    """Add a Steam competitor to the project."""
-    try:
-        with Database(project_paths(project).database) as database:
-            database.migrate()
-            competitor, added = add_competitor(database, value)
-    except (ProjectError, FileNotFoundError) as error:
-        raise typer.BadParameter(str(error)) from error
-    state = "Added" if added else "Already present"
-    typer.echo(f"{state} competitor {competitor.appid}: {competitor.store_url}")
-
-
-@app_commands.command("list")
-def app_list(
-    project: Annotated[
-        Path, typer.Option("--project", help="Project directory.")
-    ] = Path("."),
-) -> None:
-    """List competitors in the project."""
-    try:
-        with Database(project_paths(project).database) as database:
-            database.migrate()
-            competitors = list_competitors(database)
-    except (ProjectError, FileNotFoundError) as error:
-        raise typer.BadParameter(str(error)) from error
-    for competitor in competitors:
-        typer.echo(f"{competitor.appid}\t{competitor.store_url}")
 
 
 @app.command()
